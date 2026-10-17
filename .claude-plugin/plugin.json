@@ -1,0 +1,19 @@
+{
+  "name": "job-search-agent",
+  "version": "0.1.0",
+  "description": "Personal HR agent for your job search, built around a Job Radar that tracks openings and your contact network, and pushes you to turn openings into sent applications.",
+  "author": {
+    "name": "Andrew Sebag"
+  },
+  "homepage": "https://github.com/Yeti0ne/job-search-agent",
+  "repository": "https://github.com/Yeti0ne/job-search-agent",
+  "license": "AGPL-3.0",
+  "keywords": [
+    "job-search",
+    "career",
+    "recruiting",
+    "hr",
+    "job-radar",
+    "applications"
+  ]
+}
