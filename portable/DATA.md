@@ -11,6 +11,7 @@ radar/
   reports/<AAAA-Www>.json   bilan hebdomadaire
   config/match_grid.json    la grille de notation de l'utilisateur, versionnée
   config/profile.json       ce dont les automatisations ont besoin (pays, fuseau, semaine ouvrée, langue locale…), voir PROFILE.md
+  config/cv.json            coordonnées et faits du CV (name, contact, facts, rules, language, max_words), voir PROFILE.md ; la page du Radar de Claude le lit, les autres assistants peuvent s'en servir pour rédiger les CV
 ```
 
 ## Règles d'écriture

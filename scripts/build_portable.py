@@ -76,6 +76,56 @@ def profile_fields(text: str):
     return [w.strip() for w in seg.split(",") if re.fullmatch(r"[a-z_]+", w.strip())]
 
 
+def cv_fields(text: str):
+    m = re.search(r"le document `config/cv` \(champs : (.*?)\)", text, flags=re.S)
+    return [w.strip() for w in m.group(1).split(",") if re.fullmatch(r"[a-z_]+", w.strip())] if m else []
+
+
+def check_page(skill_text, statuses, data, profile, errors):
+    page_file = ROOT / "skills" / "recherche-emploi" / "assets" / "radar-page.html"
+    if not page_file.exists():
+        errors.append("la page du Radar skills/recherche-emploi/assets/radar-page.html est introuvable")
+        return
+    page = page_file.read_text(encoding="utf-8")
+    if len(page.encode("utf-8")) > 16_000_000:
+        errors.append("la page du Radar dépasse 16 Mo")
+    if "assets/radar-page.html" not in skill_text:
+        errors.append("le skill ne cite pas assets/radar-page.html")
+    for st in statuses:
+        if f'["{st}",' not in page:
+            errors.append(f"le statut {st} du skill manque dans la page du Radar")
+    for doc in ("match_grid", "profile", "cv"):
+        if f'x.id === "{doc}"' not in page:
+            errors.append(f"la page du Radar ne lit pas config/{doc}")
+    cvf = cv_fields(skill_text)
+    if len(cvf) < 6:
+        errors.append(f"champs de config/cv mal lus dans le skill ({len(cvf)})")
+    for f in cvf:
+        if f"d.{f}" not in page:
+            errors.append(f"le champ {f} de config/cv n'est pas lu par la page du Radar")
+        if f"`{f}`" not in profile and f'"{f}"' not in profile:
+            errors.append(f"le champ {f} de config/cv manque dans portable/PROFILE.md")
+        if f not in data:
+            errors.append(f"le champ {f} de config/cv manque dans portable/DATA.md")
+    for f in profile_fields(skill_text):
+        if f"d.{f}" not in page and f'"{f}"' not in page and f in ("country", "timezone", "work_week", "currency", "local_language", "home_area", "job_sites", "weekly_target", "target_roles"):
+            errors.append(f"le champ {f} de config/profile n'est pas lu par la page du Radar")
+    for hard in ("Asia/Jerusalem",):
+        if hard in page:
+            errors.append(f"fuseau écrit en dur dans la page : {hard}")
+    import shutil, subprocess, tempfile
+    node = shutil.which("node")
+    if node:
+        i = page.find("<script>\n(function")
+        j = page.find("</script>", i)
+        if i >= 0 and j > i:
+            with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as fh:
+                fh.write(page[i + 8:j])
+            r = subprocess.run([node, "--check", fh.name], capture_output=True, text=True)
+            if r.returncode != 0:
+                errors.append("le script de la page du Radar a une erreur de syntaxe : " + r.stderr.strip().splitlines()[0][:120])
+
+
 def check() -> int:
     errors = []
     if not OUT.exists() or OUT.read_text(encoding="utf-8") != build():
@@ -123,6 +173,7 @@ def check() -> int:
             errors.append(f"le champ {f} de config/profile manque dans portable/PROFILE.md")
     if "config/profile" not in compact:
         errors.append("le prompt compact ne mentionne pas config/profile")
+    check_page(skill_text, statuses, data, profile, errors)
     tasks_dir = ROOT / "skills" / "recherche-emploi" / "references" / "taches"
     tpls = sorted(tasks_dir.glob("*.md")) if tasks_dir.exists() else []
     if len(tpls) < 3:
@@ -145,7 +196,7 @@ def check() -> int:
         print("ERREUR :", e)
     if not errors:
         print(f"OK : AGENTS.md à jour, prompt compact {len(compact)}/{COMPACT_LIMIT} caractères, poids, "
-              f"{len(fields)} champs, {len(statuses)} statuts et {len(pf)} champs de profil en phase")
+              f"{len(fields)} champs, {len(statuses)} statuts, {len(pf)} champs de profil et la page du Radar en phase")
     return 1 if errors else 0
 
 

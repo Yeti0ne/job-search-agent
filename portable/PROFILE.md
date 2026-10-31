@@ -68,4 +68,19 @@ Seulement ce dont la page et les tâches planifiées ont besoin, sans coordonné
   "tasks": {}
 }
 ```
-(Valeurs fictives : l'agent remplit le vrai document à partir de ton profil, après ta validation.)
+(Valeurs fictives : l'agent remplit le vrai document à partir de ton profil, après ta validation.) `local_language` peut aussi porter `resource_url` (ton cahier ou ton appli d'apprentissage), et `job_sites` accepte des noms ou des objets `{ "name": "…", "url": "…" }`.
+
+## Ce que la page du Radar lit en plus (document `config/cv`)
+Pour que les boutons de la page (CV adapté, plan, préparation d'entretien, estimation de salaire) marchent, l'agent écrit aussi un document `config/cv` à partir de ton bloc 1 et de ton bloc 3 : `name`, `contact` (e-mail, téléphone, ville ou pays à écrire sur le CV), `facts` (parcours chiffré, compétences, formation, langues : seulement ce qui est vrai), `rules` (tes règles de CV), `language` (langue du CV), `max_words` (longueur maximale). C'est le seul document du Radar qui porte tes coordonnées : ne partage le Radar qu'avec toi.
+
+```json
+{
+  "name": "Camille Martin",
+  "contact": "camille.martin@example.org · +33 6 12 34 56 78 · Lyon",
+  "facts": "Responsable exploitation IT. Exemple SA (2018-2026) : équipe de 8 personnes, disponibilité 99,9 %. Compétences : supervision, gestion des incidents. Master informatique. Français natif, anglais courant.",
+  "rules": "CV en français, une page, ville seule dans la localisation.",
+  "language": "français",
+  "max_words": 450
+}
+```
+(Valeurs fictives.)
