@@ -2,6 +2,10 @@
 
 Versions follow `.claude-plugin/plugin.json`. Claude Code users only receive an update when that number changes.
 
+## 0.6.1
+- Skill §3 : l'ordre de « quoi faire aujourd'hui » est tenu même quand l'agent regroupe des actions (une relance due passe avant les offres, jamais après). Défaut trouvé par les nouveaux tests de comportement.
+- Tests de comportement de l'agent (`tests/agent/`) : 11 scénarios sur un Radar fictif en fichiers, lancés avec `claude -p` en mode restreint, vérifiés sans modèle (notes reproductibles et cohérentes avec la grille, annonce piégée ignorée et signalée, rien d'envoyé, boucle après candidature, bilan chiffré, CV sans invention, jour non ouvré, Radar absent). `selftest.py` contrôle les vérificateurs avec des agents fautifs simulés et fait partie de `scripts/build_portable.py --check`.
+
 ## 0.6.0
 - Ready-made Radar page for Claude: `skills/recherche-emploi/assets/radar-page.html`, a single self-contained page with no personal or country-specific content. It reads `config/profile` (country, time zone, working week, currency, local language, job sites, weekly target…), the new `config/cv` document (name, contact, facts, rules, language, max_words) and `config/match_grid`.
 - Page features: offers and network views with filters, match scores and their breakdown, daily routine with « à traiter d'abord » (interviews, replies to confirm, due actions), post-application follow-up fields, discard reasons (`reject_reason`), conversion funnel with the 5-application threshold, daily and seasonal activity, weekly review, application plan, tailored CV with a generic ATS check (keywords taken from the posting itself), interview prep and practice quiz, company brief, salary estimate in the profile's currency, add-an-opening-by-link scored with the user's own grid.

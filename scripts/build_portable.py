@@ -174,6 +174,12 @@ def check() -> int:
     if "config/profile" not in compact:
         errors.append("le prompt compact ne mentionne pas config/profile")
     check_page(skill_text, statuses, data, profile, errors)
+    selftest = ROOT / "tests" / "agent" / "selftest.py"
+    if selftest.exists():
+        import subprocess
+        r = subprocess.run([sys.executable, str(selftest)], capture_output=True, text=True)
+        if r.returncode != 0:
+            errors.append("tests/agent/selftest.py échoue : " + (r.stdout.strip().splitlines() or ["?"])[-1][:140])
     tasks_dir = ROOT / "skills" / "recherche-emploi" / "references" / "taches"
     tpls = sorted(tasks_dir.glob("*.md")) if tasks_dir.exists() else []
     if len(tpls) < 3:
