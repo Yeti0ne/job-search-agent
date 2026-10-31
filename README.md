@@ -12,6 +12,7 @@ Nothing personal or country-specific is hardcoded. The agent reads your own prof
 - **Follow-ups** — network contacts at day 7, two maximum, following your own stated preference for already-sent applications.
 - **Network cross-check** — when an opening is at a company where you already have a contact, a referral beats a cold application, so it is surfaced first.
 - **Automated watch** — scheduled passes over job boards and email alerts, with a notification only for a strong match, plus a weekly review.
+- **Honest coaching** — after two weeks under five applications it stops repeating itself, checks that nothing went unlogged, switches to a minimal week (three ready applications in one 90-minute block, three network messages) and asks what is blocking. Discarded openings carry a reason, so the weekly review shows what blocks you most.
 - **Drafting, never sending** — LinkedIn messages, emails, targeted CVs, interview prep and salary negotiation are all drafted for you. You send them yourself.
 
 ## Installation
@@ -51,6 +52,10 @@ The agent is plain-text instructions plus a simple data format, so it is not tie
 Honest limits: the Radar page (the visual app) and the automated watch need an assistant that can host a page, search the web, read email alerts and schedule runs. Elsewhere the agent falls back to tables in the conversation and on-demand watch passes. Claude is the reference implementation; the other setups use the same instructions but have not been tested one by one, so please report what breaks.
 
 Maintainers: after changing the skill, run `python3 scripts/build_portable.py` to regenerate `AGENTS.md`, then `python3 scripts/build_portable.py --check`. The check also fails if the compact prompt goes over 8,000 characters or its scoring weights drift from the skill's. To release, bump `version` in `.claude-plugin/plugin.json` (it is the only place the version is set): Claude Code users keep their cached copy until that string changes. Run `claude plugin validate .` and `claude plugin validate .claude-plugin/marketplace.json` before opening the pull request.
+
+## Privacy
+
+The Radar holds personal data about you and about the people in your network (names, profile links, drafted messages). Keep it private: share the Radar page with yourself only (a link share is readable by anyone who has the link), and never commit `radar/` or `radar.json` to a public repository. The agent stores only what the search needs, leaves out private details, and never sends anything for you.
 
 ## Setup
 

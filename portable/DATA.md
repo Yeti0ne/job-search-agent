@@ -20,6 +20,7 @@ radar/
 - Avant de créer une offre, lister `radar/offers/` pour vérifier le doublon et le quasi-doublon (même entreprise, intitulé très proche, même ville).
 - Plusieurs écritures (une veille, une re-notation) : les faire d'un seul tenant, puis relire pour contrôler. En cas d'erreur à mi-parcours, le dire et ne pas continuer.
 - Garder une copie du dossier avant une re-notation de masse (`radar-backup-<date>/`).
+- Le dossier `radar/` (ou `radar.json`) contient des données personnelles de tiers : ne jamais le publier ni le committer dans un dépôt public (l'ajouter à `.gitignore`), et ne le partager qu'avec l'utilisateur.
 
 ## Exemple d'offre
 ```json
