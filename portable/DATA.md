@@ -49,7 +49,7 @@ radar/
 }
 ```
 
-Après la candidature, l'offre reçoit : `applied_at`, `channel`, `cv_version`, `role_class`, `contact_name`, `next_action`, `next_action_date` ; puis, selon l'avancement, `stage`, `interview_at`, `debrief_text`, `company_brief`, et `suggested_status`, `suggested_note`, `suggested_at` quand un e-mail annonce un changement (l'utilisateur confirme avant que `status` change). Exemple :
+La veille et la vérification hebdomadaire ajoutent aussi `repost_dates`, `last_checked_at`, `last_check_result` (`open`, `closed` ou `unknown`) et, seulement si l'annonce les donne, `salary_text`, `salary_est`, `co_size`, `co_sector`. Après la candidature, l'offre reçoit : `applied_at`, `channel`, `cv_version`, `role_class`, `contact_name`, `next_action`, `next_action_date` ; puis, selon l'avancement, `stage`, `interview_at`, `debrief_text`, `company_brief`, et `suggested_status`, `suggested_note`, `suggested_at` quand un e-mail annonce un changement (l'utilisateur confirme avant que `status` change). Exemple :
 ```json
 {
   "status": "postule",

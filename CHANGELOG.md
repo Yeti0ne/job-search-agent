@@ -2,6 +2,12 @@
 
 Versions follow `.claude-plugin/plugin.json`. Claude Code users only receive an update when that number changes.
 
+## 0.5.0
+- Scheduled-task templates in `skills/recherche-emploi/references/taches/`: `veille.md`, `verification.md`, `bilan.md`. Profile-driven (they read `config/profile` and `config/match_grid` on each run), reply scan and `required_skills` capture in the watch, conversion tables, escalation and `metrics` in the weekly review.
+- Creation procedure in the skill (§4): variables, schedule in the user's time zone and work week, approval before creating, check run.
+- `config/profile` gains `levels_accepted`, `exclusions`, `tasks`.
+- `build_portable.py --check` also verifies the templates (variables documented, configuration read, files cited).
+
 ## 0.4.0
 - Post-application loop: `channel`, `cv_version`, `role_class`, `stage`, `interview_at`, `next_action` / `next_action_date`, `debrief_text`. A reply scan proposes status changes (`suggested_status`, `suggested_note`, `suggested_at`) and never applies them without confirmation.
 - Company brief (`company_brief`), interview debrief template, thank-you drafts and offer comparison on the user's own criteria.

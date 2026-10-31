@@ -15,6 +15,7 @@ Au premier lancement, l'agent peut aussi te poser ces questions en trois blocs c
 - Langues et niveaux (honnêtes : l'agent n'écrira jamais un niveau que tu n'as pas) :
 - Points faibles ou écarts connus que l'agent ne doit pas masquer, mais préparer :
 - Postes visés : principaux / secondaires / adjacents (proches de ton métier, que tu accepterais) :
+- Niveaux de poste acceptés (par exemple senior et intermédiaire, mais pas junior) et exclusions (types de postes à écarter d'office) :
 - Types d'entreprises que tu préfères (start-up, grand groupe, public, association, conseil…), et entreprises cibles par priorité (A, B) :
 - Objectif de la campagne : prises de contact, entretiens, offre, échéance :
 
@@ -41,7 +42,7 @@ Au premier lancement, l'agent peut aussi te poser ces questions en trois blocs c
 - Tout ce que l'agent doit toujours ou ne doit jamais faire pour toi :
 
 ## Ce qui part dans le Radar (document `config/profile`)
-Seulement ce dont la page et les tâches planifiées ont besoin, sans coordonnées ni parcours : `country`, `timezone`, `work_week`, `holidays`, `currency`, `local_language` (nom et niveau), `modes`, `target_roles` (main, secondary, adjacent), `home_area` (la ville seulement), `zone_scale` (ville → points de 4 à 20), `job_sites`, `preferred_company_types`, `target_companies`, `weekly_target`, `followup_pref`, `notify`, `ui_language`. Exemple fictif :
+Seulement ce dont la page et les tâches planifiées ont besoin, sans coordonnées ni parcours : `country`, `timezone`, `work_week`, `holidays`, `currency`, `local_language` (nom et niveau), `modes`, `target_roles` (main, secondary, adjacent), `levels_accepted`, `exclusions`, `home_area` (la ville seulement), `zone_scale` (ville → points de 4 à 20), `job_sites`, `preferred_company_types`, `target_companies`, `weekly_target`, `followup_pref`, `notify`, `ui_language`, `tasks` (nom et identifiant des tâches planifiées créées). Exemple fictif :
 
 ```json
 {
@@ -53,6 +54,8 @@ Seulement ce dont la page et les tâches planifiées ont besoin, sans coordonné
   "local_language": { "name": "français", "level": "natif" },
   "modes": ["hybrid", "remote"],
   "target_roles": { "main": ["Responsable exploitation IT"], "secondary": ["Chef de projet infrastructure"], "adjacent": ["Support niveau 3"] },
+  "levels_accepted": ["senior", "intermédiaire"],
+  "exclusions": ["vente pure", "support de niveau 1"],
   "home_area": "Lyon",
   "zone_scale": { "Lyon": 20, "Villeurbanne": 20, "Grenoble": 12, "Paris": 6 },
   "job_sites": ["LinkedIn", "Indeed", "Welcome to the Jungle", "APEC"],
@@ -61,7 +64,8 @@ Seulement ce dont la page et les tâches planifiées ont besoin, sans coordonné
   "weekly_target": 10,
   "followup_pref": "pas de relance sur une candidature envoyée avant 14 jours",
   "notify": "ab_et_reponses",
-  "ui_language": "fr"
+  "ui_language": "fr",
+  "tasks": {}
 }
 ```
 (Valeurs fictives : l'agent remplit le vrai document à partir de ton profil, après ta validation.)

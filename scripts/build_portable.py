@@ -52,6 +52,16 @@ def skill_fields(text: str):
     return names
 
 
+def skill_fields_veille(text: str):
+    """Champs « Veille et vérification » (hors prompt compact : voir DATA.md)."""
+    m = re.search(r"Veille et vérification : (.*?)\. Après candidature", text, flags=re.S)
+    if not m:
+        return []
+    seg = re.sub(r"\([^)]*\)", "", m.group(1))
+    seg = re.sub(r"et si l'annonce les donne", "", seg)
+    return [w.strip() for w in re.split(r",| et ", seg) if re.fullmatch(r"[a-z]+(?:_[a-z]+)*", w.strip())]
+
+
 def skill_statuses(text: str):
     m = re.search(r"^- Statuts : (.*)\.$", text, flags=re.M)
     return [x.strip() for x in m.group(1).split(",")] if m else []
@@ -93,6 +103,12 @@ def check() -> int:
             errors.append(f"le champ {f} du skill manque dans le prompt compact")
         if f not in data:
             errors.append(f"le champ {f} du skill manque dans portable/DATA.md")
+    vf = skill_fields_veille(skill_text)
+    if len(vf) < 7:
+        errors.append(f"champs « Veille et vérification » mal lus dans le skill ({len(vf)})")
+    for f in vf:
+        if f not in data:
+            errors.append(f"le champ {f} du skill manque dans portable/DATA.md")
     statuses = skill_statuses(skill_text)
     if len(statuses) < 9:
         errors.append("liste des statuts mal lue dans le skill")
@@ -107,7 +123,22 @@ def check() -> int:
             errors.append(f"le champ {f} de config/profile manque dans portable/PROFILE.md")
     if "config/profile" not in compact:
         errors.append("le prompt compact ne mentionne pas config/profile")
-    desc = re.search(r'^description: "(.*)"$', skill_text, flags=re.M)
+    tasks_dir = ROOT / "skills" / "recherche-emploi" / "references" / "taches"
+    tpls = sorted(tasks_dir.glob("*.md")) if tasks_dir.exists() else []
+    if len(tpls) < 3:
+        errors.append("modèles de tâches planifiées manquants dans skills/recherche-emploi/references/taches/")
+    documented = set(re.findall(r"`(\{\{[A-Z_]+\}\})`", skill_text))
+    for tpl in tpls:
+        txt = tpl.read_text(encoding="utf-8")
+        if f"references/taches/{tpl.name}" not in skill_text:
+            errors.append(f"le skill ne cite pas references/taches/{tpl.name}")
+        for var in sorted(set(re.findall(r"\{\{[A-Z_]+\}\}", txt))):
+            if var not in documented:
+                errors.append(f"{tpl.name} : la variable {var} n'est pas documentée dans le skill (§4)")
+        for f in ("config/profile", "config/match_grid"):
+            if tpl.name != "verification.md" and f not in txt:
+                errors.append(f"{tpl.name} ne lit pas {f}")
+        desc = re.search(r'^description: "(.*)"$', skill_text, flags=re.M)
     if not desc or len(desc.group(1)) > 1024:
         errors.append("description du skill absente ou de plus de 1024 caractères")
     for e in errors:
