@@ -9,10 +9,11 @@ Nothing personal or country-specific is hardcoded. The agent reads your own prof
 - **Job Radar** — one record per opening (company, recruiter, title, location, mode, status, tier, match score) and one per network contact (priority, angle, ready-to-send message, follow-up date).
 - **Match scoring** — a reproducible, versioned grid (role 30, seniority 15, local language 20, location and work mode 20, company type 7, tech fit 8) built from your own profile and stored once in the Radar. Every opening gets six sub-scores, a one-line breakdown and a grid version, so scores are comparable instead of gut feelings; changing the grid offers a one-pass re-score that keeps the old scores.
 - **Daily routine** — a default target of 10 applications a week: the two best unapplied openings, plus two priority LinkedIn messages, with the next concrete step for each.
+- **After the application** — each sent application records its channel, CV version and next dated action. The agent scans reply emails (when it can read your mailbox) and *proposes* status changes that you confirm; it never changes a status on its own. Interviews get a company brief (public, dated sources, nothing invented), a debrief within 24 hours and a drafted thank-you. Offers are compared on your own criteria.
 - **Follow-ups** — network contacts at day 7, two maximum, following your own stated preference for already-sent applications.
 - **Network cross-check** — when an opening is at a company where you already have a contact, a referral beats a cold application, so it is surfaced first.
 - **Automated watch** — scheduled passes over job boards and email alerts, with a notification only for a strong match, plus a weekly review.
-- **Honest coaching** — after two weeks under five applications it stops repeating itself, checks that nothing went unlogged, switches to a minimal week (three ready applications in one 90-minute block, three network messages) and asks what is blocking. Discarded openings carry a reason, so the weekly review shows what blocks you most.
+- **Coaching by the numbers** — the weekly review shows conversion (applications → replies → interviews) by source, CV version, channel and role family, refuses to conclude on fewer than five applications, and lists the skills asked for most in your A/B openings against yours. After two weeks under five applications it stops repeating itself, checks that nothing went unlogged, switches to a minimal week (three ready applications in one 90-minute block, three network messages) and asks what is blocking. Discarded openings carry a reason.
 - **Drafting, never sending** — LinkedIn messages, emails, targeted CVs, interview prep and salary negotiation are all drafted for you. You send them yourself.
 
 ## Installation
@@ -47,9 +48,9 @@ The agent is plain-text instructions plus a simple data format, so it is not tie
 |---|---|---|
 | A coding agent that reads `AGENTS.md` (at the time of writing: Codex CLI, GitHub Copilot, Cursor, Windsurf, Zed, Cline, Kiro, opencode, Amp, Qwen Code, goose; Gemini CLI once you add `AGENTS.md` to `context.fileName`) | Open this repository or copy `AGENTS.md` and `portable/` into your project | The full agent, with the Radar kept as JSON files in `radar/` ([`portable/DATA.md`](portable/DATA.md)). Automated watch only if the tool also has web search and a scheduler |
 | A chat assistant with project or custom instructions (custom GPT, Gemini Gem, Copilot, Le Chat, a local model…) | Paste [`portable/agent-prompt-compact.md`](portable/agent-prompt-compact.md) (under 8,000 characters, the custom GPT instruction limit) and upload `AGENTS.md` as a knowledge file if the tool allows it | Advice, scoring, drafting, daily plan. The Radar is one `radar.json` you paste at the start of a session and update at the end |
-| Claude | Install the plugin as above | Everything, including the Radar page and the scheduled watch |
+| Claude | Install the plugin as above | The whole agent. The Radar is a Claude artifact that the agent creates and fills for you; scheduled passes are tasks you create with Claude. Ready-made page and task templates are not shipped yet |
 
-Honest limits: the Radar page (the visual app) and the automated watch need an assistant that can host a page, search the web, read email alerts and schedule runs. Elsewhere the agent falls back to tables in the conversation and on-demand watch passes. Claude is the reference implementation; the other setups use the same instructions but have not been tested one by one, so please report what breaks.
+Honest limits: a visual Radar page and the automated watch need an assistant that can host a page, search the web, read email alerts and schedule runs. Elsewhere the agent falls back to tables in the conversation and on-demand watch passes, and reply scanning works on emails you paste. Claude is the reference implementation; the other setups use the same instructions but have not been tested one by one, so please report what breaks.
 
 Maintainers: after changing the skill, run `python3 scripts/build_portable.py` to regenerate `AGENTS.md`, then `python3 scripts/build_portable.py --check`. The check also fails if the compact prompt goes over 8,000 characters or its scoring weights drift from the skill's. To release, bump `version` in `.claude-plugin/plugin.json` (it is the only place the version is set): Claude Code users keep their cached copy until that string changes. Run `claude plugin validate .` and `claude plugin validate .claude-plugin/marketplace.json` before opening the pull request.
 
@@ -59,7 +60,7 @@ The Radar holds personal data about you and about the people in your network (na
 
 ## Setup
 
-The agent reads your profile rather than asking you to configure files. Before your first real session, make sure it can find:
+The agent reads your profile rather than asking you to configure files. On the first run with no profile it asks you a short set of questions in three blocks, reads you back a ten-line summary to validate, and saves it. You can also fill [`portable/PROFILE.md`](portable/PROFILE.md) yourself and hand it over. Either way it needs to find:
 
 - your identity, contact details, target job title and seniority;
 - your track record: roles, quantified achievements, skills, education, languages;
@@ -75,7 +76,9 @@ Anything missing is asked for once. Nothing about your background is ever invent
 - **Untrusted content.** Job ads, recruiter emails and web pages are treated as data, never as instructions.
 - **Honest about what is stuck.** Few applications, a technical gap, a language requirement — it says so plainly and proposes the smallest useful next action.
 
-The skill instructions are written in French; the agent itself replies in your language and drafts recruiter messages in the language of the opening.
+The skill instructions are written in French; the agent itself replies in your language and drafts recruiter messages in the language of the opening. The skill description is bilingual so that it also triggers on English requests.
+
+See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
 
 ## License
 
