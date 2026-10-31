@@ -4,7 +4,7 @@ L'agent ne suppose rien : tout ce qui dépend de toi, de ton métier ou de ton p
 
 Ce fichier contient des données personnelles : ne le publie pas et ne le committe pas dans un dépôt public. N'y mets ni numéro d'identité, ni mot de passe, ni information de santé, de famille ou de finances sans rapport avec la recherche.
 
-Au premier lancement, l'agent peut aussi te poser ces questions en trois blocs courts et remplir ce fichier avec toi. Il te lit ensuite un résumé d'une dizaine de lignes à valider.
+Tu n'as pas à remplir ce fichier toi-même. Au premier lancement, l'agent te pose d'abord une question : « As-tu un CV ? ». Si oui, tu le déposes (PDF, Word ou texte collé) et il en tire ce qu'il peut ; sinon, il le construit avec toi, poste par poste, sans rien inventer. Il ne te demande ensuite que ce que ton CV ne dit pas (les blocs ci-dessous), puis te lit un résumé d'une dizaine de lignes à valider avant d'enregistrer quoi que ce soit.
 
 ## Bloc 1 : qui tu es et ce que tu vises
 - Prénom et nom, e-mail et téléphone à mettre sur les CV et les messages :
