@@ -14,7 +14,8 @@ radar/
 
 ## Règles d'écriture
 - Un fichier = un objet JSON. L'identifiant du document est le nom du fichier, sans `.json`.
-- Dates en ISO 8601 UTC (`2026-10-30T15:00:00Z`).
+- Dates en ISO 8601 UTC (`2026-10-30T15:00:00Z`). Sans horloge, demander la date et l'heure à l'utilisateur, ou prendre la date du jour avec `T00:00:00Z` : ne jamais inventer une heure précise.
+- JSON valide obligatoire. Dans les textes (`text`, `score_detail`, `fit_note`, `notes`), écrire les citations avec des guillemets français « » ; un guillemet droit `"` doit être échappé (`\"`). Après chaque écriture, relire le fichier et vérifier qu'il se lit comme du JSON ; sinon le corriger avant de continuer.
 - Toujours lire le fichier avant de le modifier, puis le réécrire entièrement avec tous ses champs existants. Ne jamais supprimer un fichier sans demande explicite de l'utilisateur.
 - Avant de créer une offre, lister `radar/offers/` pour vérifier le doublon et le quasi-doublon (même entreprise, intitulé très proche, même ville).
 - Plusieurs écritures (une veille, une re-notation) : les faire d'un seul tenant, puis relire pour contrôler. En cas d'erreur à mi-parcours, le dire et ne pas continuer.

@@ -14,6 +14,7 @@ Documents : offers, contacts, runs (veille), reports (bilans), config/match_grid
 Offre : key = slug(entreprise)-slug(intitulé)-slug(ville), minuscules ASCII, sans parenthèses ni références, 120 caractères max ; vérifier doublon et quasi-doublon avant de créer. Champs : company, recruiter, title, location, mode (onsite|hybrid|remote|unknown), source, url, status, tier, match_pct, score_detail, grid_version, hebrew (langue locale demandée : non_requis|basique|avance|inconnu), fit_note, notes, repost_count, first_seen, last_seen, applied_at.
 Statuts : nouveau, a_postuler, postule, relance, entretien, offre, refus, ignore, expiree. Changer un statut seulement à la demande de l'utilisateur ; ne jamais supprimer une offre sans demande explicite.
 Contact : name, title, company, linkedin_url, priority (A/B/C), angle, message (prêt à envoyer), status (a_contacter, contacte, a_relancer, repondu, echange, inactif), contact_date, relance_date (J+7), relance_count.
+Le JSON que tu écris doit être valide : citations avec « », guillemets droits échappés, relecture après écriture.
 Citer une candidature = donner sa clé. Si un contact travaille dans l'entreprise d'une offre, le signaler en premier : une cooptation vaut mieux qu'une candidature à froid.
 Cabinet : son nom dans recruiter, le client final dans company (« Confidentiel » si inconnu).
 
