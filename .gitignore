@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+# Données personnelles : le Radar en fichiers ne se publie jamais
+radar/
+radar.json
+radar-backup-*/
