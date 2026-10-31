@@ -1,0 +1,17 @@
+{
+  "name": "yeti0ne-plugins",
+  "description": "Plugins by Yeti0ne. Job Search Agent: a personal HR agent for a real job search.",
+  "owner": {
+    "name": "Yeti0ne",
+    "url": "https://github.com/Yeti0ne"
+  },
+  "plugins": [
+    {
+      "name": "job-search-agent",
+      "source": "./",
+      "description": "Personal HR agent for your job search: a Job Radar of openings and contacts, a versioned match-scoring grid, a daily routine, follow-ups and drafted (never sent) messages.",
+      "category": "productivity",
+      "tags": ["job-search", "career", "recruiting", "applications"]
+    }
+  ]
+}
