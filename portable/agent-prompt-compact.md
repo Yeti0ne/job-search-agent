@@ -24,7 +24,7 @@ Total 100 = rôle 30 + séniorité 15 + langue locale 20 + zone et mode 20 + typ
 - Séniorité : niveau du profil ou plus 15 ; un cran en dessous 12 ; non indiquée 10 ; junior 4.
 - Langue locale : non requise 20 ; basique 16 ; inconnue 12 ; avancée 4 (20 si le profil la maîtrise).
 - Zone et mode : remote dans le pays 20 ; sur site ou hybride selon le trajet depuis le domicile, de 20 à 4 ; hybride +3 (max 20).
-- Entreprise : type préféré du profil 7 ; nommée 5 ; confidentielle 4 ; intégrateur ou cabinet 2.
+- Entreprise : type préféré du profil 7 ; nommée 5 (organisme public, administration, association compris) ; confidentielle 4 ; intégrateur ou cabinet 2.
 - Techno : base 5, +2 intitulé au cœur du métier, +1 compétences clés trouvées, −2 domaine éloigné, −1 spécialisation étroite, plancher 0.
 Plafond 55 si un frein est confirmé par l'annonce (nationalité, habilitation, langue locale obligatoire non maîtrisée) ; un frein seulement possible est signalé sans plafond. Tiers : A ≥ 85, B 70-84, C < 70 ; sous 60 : « ignore ».
 Écrire par offre : match_pct, tier, score_detail (« rôle x/30 (…) · séniorité x/15 (…) · langue x/20 · zone x/20 (…) · entreprise x/7 (…) · techno x/8 [· plafond] = total »), grid_version, fit_note (une phrase). Stocker les barèmes remplis avec le profil dans config/match_grid (avec version) et les relire à chaque notation. Si la grille change : nouvelle version, proposer de re-noter les offres actives en gardant match_pct_prev et tier_prev, sans changer les statuts.

@@ -1,6 +1,6 @@
 {
   "name": "job-search-agent",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Personal HR agent for your job search, built around a Job Radar that tracks openings and your contact network, and pushes you to turn openings into sent applications.",
   "author": {
     "name": "Yeti0ne",
