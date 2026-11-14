@@ -354,7 +354,7 @@ def check() -> int:
             if var not in documented:
                 errors.append(f"{tpl.name} : la variable {var} n'est pas documentée dans le skill (§4)")
         for f in ("config/profile", "config/match_grid"):
-            if tpl.name != "verification.md" and f not in txt:
+            if tpl.name not in ("verification.md", "enrichissement.md") and f not in txt:
                 errors.append(f"{tpl.name} ne lit pas {f}")
         desc = re.search(r'^description: "(.*)"$', skill_text, flags=re.M)
     if not desc or len(desc.group(1)) > 1024:

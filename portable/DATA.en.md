@@ -52,7 +52,7 @@ radar/
 }
 ```
 
-The watch and the weekly verification also add `repost_dates`, `last_checked_at`, `last_check_result` (`open`, `closed` or `unknown`) and, only if the posting gives them, `salary_text`, `salary_est`, `co_size`, `co_sector`. After applying, the opening receives: `applied_at`, `channel`, `cv_version`, `role_class`, `contact_name`, `next_action`, `next_action_date`; then, as things progress, `stage`, `interview_at`, `debrief_text`, `company_brief`, and `suggested_status`, `suggested_note`, `suggested_at` when an e-mail announces a change (the user confirms before `status` changes). Example:
+The watch and the weekly verification also add `repost_dates`, `last_checked_at`, `last_check_result` (`open`, `closed` or `unknown`) and, only if the posting gives them, `salary_text`, `salary_est`, `co_size`, `co_sector`. After applying, the opening receives: `applied_at`, `channel`, `cv_version`, `role_class`, `contact_name`, `next_action`, `next_action_date`; then, as things progress, `stage`, `interview_at`, `debrief_text`, `company_brief`, and `suggested_status`, `suggested_note`, `suggested_at` when an e-mail announces a change (the user confirms before `status` changes). Example: Other fields: `co_glassdoor` and `co_note` (rating and remark about the company, if the posting or a public source gives them), `enrich_failed_at` (last enrichment with no result), and two fields set by the user: `fav` (favourite) and `commute_min` (commute in minutes).
 ```json
 {
   "status": "postule",

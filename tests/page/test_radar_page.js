@@ -180,6 +180,18 @@ async function newPage(ctx, fixture, opts) {
   ok(await pN.evaluate(() => !/Urgent · /.test(document.body.innerText)), 'sans fast_sites : aucune alerte');
   ok(pF.__errors.length === 0 && pN.__errors.length === 0, 'sites rapides : aucune erreur JS');
 
+  // --- jours fériés : une date de holiday_dates est sautée dans le décompte des jours ouvrés
+  const fxH = JSON.parse(JSON.stringify(fx)); const hd = new Date(); do { hd.setDate(hd.getDate() + 1); } while (![1, 2, 3, 4, 5].includes(hd.getDay()));
+  fxH.config.profile.holiday_dates = [hd.getFullYear() + '-' + String(hd.getMonth() + 1).padStart(2, '0') + '-' + String(hd.getDate()).padStart(2, '0')];
+  const pH = await newPage(ctx, fxH);
+  await pH.locator('#tabs [data-tab="suivi"]').click(); await pH.waitForTimeout(200);
+  const pickH = pH.locator('#routine [data-act="applied"]').first(); const pkH = await pickH.getAttribute('data-oid');
+  await pickH.click(); await pH.waitForTimeout(300);
+  const spH = await pH.evaluate(k => window.__store.offers[k], pkH);
+  const ndH = new Date(spH.next_action_date + 'T12:00:00'), tdH = new Date(); tdH.setHours(12, 0, 0, 0);
+  let nH = 0, cH = new Date(tdH); while (cH < ndH) { cH.setDate(cH.getDate() + 1); if ([1, 2, 3, 4, 5].includes(cH.getDay())) nH++; }
+  ok(nH === 11 && pH.__errors.length === 0, 'jour férié du profil sauté : 10 jours ouvrés = 11 jours de semaine (' + nH + ')');
+
   // --- aucune configuration du tout (Radar neuf) et mode sans base
   const p3 = await newPage(ctx, { offers: { z1: offer('z1') } });
   ok(p3.__errors.length === 0 && await p3.locator('article.row').count() === 1, 'Radar neuf sans config : la page s\'affiche sans erreur');

@@ -2,6 +2,13 @@
 
 Versions follow `.claude-plugin/plugin.json`. Claude Code users only receive an update when that number changes.
 
+## 0.9.0
+- **Fourth task template**: `references/taches/enrichissement.md` (and `.en.md`). Once per working day it fills in `required_skills` and `ad_summary` for the active A/B openings that have none (added by hand, posting unreadable on the day of the watch), 30 at most per run, and notes a failure in `enrich_failed_at` so the same posting is not retried for 14 days. It changes no status and sends no notification.
+- **Public holidays**: optional profile list `holiday_dates` (YYYY-MM-DD). The page skips those dates when it counts working days (for instance the "check for a reply" date ten working days after an application).
+- **Services companies on every run**: the watch checks `service_companies` one by one on the first run of the day and with grouped queries on the other runs.
+- **Skill**: the data model now lists the fields the page already used (`fav`, `commute_min`, `co_glassdoor`, `co_note`, `cv_match`, `enrich_failed_at`), and §4 describes the page's "AI" selector (Eco, Auto, In-depth).
+- Tests: one more page control (a holiday from the profile is skipped).
+
 ## 0.8.0
 - **New Radar page interface**: four views (Today, Openings, Network, Review) with a bottom navigation on the phone and a side navigation on the desktop, tiles and a full-screen record for each opening, a guided "next step" block (plan, CV, apply, follow-up), match scores shown as six bars, full-text search across openings and contacts, collapsible filters, cities to keep or to leave out, sorting on any column in both directions.
 - **CV with fields**: every `[to complete: …]` gap of a tailored CV becomes a field the user fills in one by one; only those fields change, the rest of the CV stays as it is (`cv_tpl`, `cv_fills`, `cv_edited_at`). Simple calculations are computed by the page, never by the model.

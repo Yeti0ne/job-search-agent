@@ -917,7 +917,7 @@ body:has(.sheet:not([hidden])) .totop { display: none; }
     try { var x = new URL(u); return (x.protocol === "https:" || x.protocol === "http:") ? x.href : null; } catch (e) { return null; }
   }
   /* ===== Réglages : documents config/profile (pays, langue locale, semaine…) et config/cv (faits du CV) du Radar ===== */
-  var CFG = { country: "", timezone: "", work_week: ["lun", "mar", "mer", "jeu", "ven"], currency: "", home_area: "", local_language: { name: "", level: "", resource_url: "" }, job_sites: [], fast_sites: [], weekly_target: 10, followup_pref: "", zone_scale: {}, target_roles: {}, levels_accepted: [], exclusions: [], preferred_company_types: [], modes: [] };
+  var CFG = { country: "", timezone: "", work_week: ["lun", "mar", "mer", "jeu", "ven"], currency: "", home_area: "", local_language: { name: "", level: "", resource_url: "" }, job_sites: [], fast_sites: [], holiday_dates: [], weekly_target: 10, followup_pref: "", zone_scale: {}, target_roles: {}, levels_accepted: [], exclusions: [], preferred_company_types: [], modes: [] };
   var CV = { name: "", contact: "", facts: "", rules: "", language: "", max_words: 0 };
   var DAY_IDX = { dim: 0, sun: 0, lun: 1, mon: 1, mar: 2, tue: 2, mer: 3, wed: 3, jeu: 4, thu: 4, ven: 5, fri: 5, sam: 6, sat: 6 };
   var SITE_URLS = {
@@ -928,6 +928,12 @@ body:has(.sheet:not([hidden])) .totop { display: none; }
   function tz() {
     try { if (CFG.timezone) { new Intl.DateTimeFormat("fr-FR", { timeZone: CFG.timezone }); return CFG.timezone; } } catch (e) {}
     return undefined;
+  }
+  /* Jours fériés : dates AAAA-MM-JJ de config/profile (holiday_dates), sautées dans le décompte des jours ouvrés. */
+  function isHoliday(d) {
+    var l = CFG.holiday_dates; if (!Array.isArray(l) || !l.length) return false;
+    var k = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+    return l.indexOf(k) >= 0;
   }
   function langName() { return String((CFG.local_language && CFG.local_language.name) || "").trim(); }
   function langNative() { return /nati|mater|bilingu|native/i.test(String((CFG.local_language && CFG.local_language.level) || "")); }
@@ -976,7 +982,7 @@ body:has(.sheet:not([hidden])) .totop { display: none; }
     ["country", "timezone", "currency", "home_area", "followup_pref"].forEach(function (k) { if (typeof d[k] === "string") CFG[k] = d[k]; });
     if (d.local_language && typeof d.local_language === "object") CFG.local_language = { name: strOf(d.local_language.name), level: strOf(d.local_language.level), resource_url: strOf(d.local_language.resource_url) };
     if (Array.isArray(d.work_week) && d.work_week.length) CFG.work_week = d.work_week.map(String);
-    ["job_sites", "fast_sites", "levels_accepted", "exclusions", "preferred_company_types", "modes"].forEach(function (k) { if (Array.isArray(d[k])) CFG[k] = d[k]; });
+    ["job_sites", "fast_sites", "holiday_dates", "levels_accepted", "exclusions", "preferred_company_types", "modes"].forEach(function (k) { if (Array.isArray(d[k])) CFG[k] = d[k]; });
     if (d.zone_scale && typeof d.zone_scale === "object") CFG.zone_scale = d.zone_scale;
     if (d.target_roles && typeof d.target_roles === "object") CFG.target_roles = d.target_roles;
     var wt = Number(d.weekly_target); if (isFinite(wt) && wt > 0) { CFG.weekly_target = wt; WEEK_GOAL = wt; }
@@ -1525,12 +1531,12 @@ body:has(.sheet:not([hidden])) .totop { display: none; }
   var STAGES = { screen_rh: "Screen RH", technique: "Entretien technique", exercice: "Exercice à la maison", final: "Entretien final" };
   var ROLE_CLASSES = { principal: "Poste principal", secondaire: "Poste secondaire", adjacent: "Poste adjacent", eloigne: "Poste éloigné" };
   var APPLIED_ST = ["postule", "relance", "entretien", "offre", "refus"], REPLIED_ST = ["entretien", "offre", "refus"], FOLLOW_ST = ["postule", "relance", "entretien", "offre"];
-  var WORK_DAYS = [1, 2, 3, 4, 5]; /* réglé par config/profile (work_week) ; les jours fériés ne sont pas pris en compte ici */
+  var WORK_DAYS = [1, 2, 3, 4, 5]; /* réglé par config/profile (work_week) ; les jours fériés viennent de holiday_dates */
   function pad2(n) { return String(n).padStart(2, "0"); }
   function dstr(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
   function addWorkDays(n) {
     var d = new Date(); d.setHours(12, 0, 0, 0);
-    while (n > 0) { d.setDate(d.getDate() + 1); if (WORK_DAYS.indexOf(d.getDay()) >= 0) n--; }
+    while (n > 0) { d.setDate(d.getDate() + 1); if (WORK_DAYS.indexOf(d.getDay()) >= 0 && !isHoliday(d)) n--; }
     return dstr(d);
   }
   function daysTo(str) {

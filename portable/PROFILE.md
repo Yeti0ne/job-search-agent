@@ -42,7 +42,7 @@ Tu n'as pas à remplir ce fichier toi-même. Au premier lancement, l'agent te po
 - Tout ce que l'agent doit toujours ou ne doit jamais faire pour toi :
 
 ## Ce qui part dans le Radar (document `config/profile`)
-Seulement ce dont la page et les tâches planifiées ont besoin, sans coordonnées ni parcours : `country`, `timezone`, `work_week`, `holidays`, `currency`, `local_language` (nom et niveau), `modes`, `target_roles` (main, secondary, adjacent), `levels_accepted`, `exclusions`, `home_area` (la ville seulement), `zone_scale` (ville → points de 4 à 20), `job_sites`, `fast_sites`, `service_companies`, `preferred_company_types`, `target_companies`, `weekly_target`, `followup_pref`, `notify`, `ui_language`, `tasks` (nom et identifiant des tâches planifiées créées). Exemple fictif :
+Seulement ce dont la page et les tâches planifiées ont besoin, sans coordonnées ni parcours : `country`, `timezone`, `work_week`, `holidays`, `holiday_dates`, `currency`, `local_language` (nom et niveau), `modes`, `target_roles` (main, secondary, adjacent), `levels_accepted`, `exclusions`, `home_area` (la ville seulement), `zone_scale` (ville → points de 4 à 20), `job_sites`, `fast_sites`, `service_companies`, `preferred_company_types`, `target_companies`, `weekly_target`, `followup_pref`, `notify`, `ui_language`, `tasks` (nom et identifiant des tâches planifiées créées). Exemple fictif :
 
 ```json
 {
@@ -50,6 +50,7 @@ Seulement ce dont la page et les tâches planifiées ont besoin, sans coordonné
   "timezone": "Europe/Paris",
   "work_week": ["lun", "mar", "mer", "jeu", "ven"],
   "holidays": "jours fériés légaux de France",
+  "holiday_dates": ["2027-01-01", "2027-04-05", "2027-05-01"],
   "currency": "EUR",
   "local_language": { "name": "français", "level": "natif" },
   "modes": ["hybrid", "remote"],

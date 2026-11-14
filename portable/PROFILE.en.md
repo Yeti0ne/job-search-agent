@@ -42,7 +42,7 @@ You do not have to fill in this file yourself. On first launch, the agent first 
 - Anything the agent must always or never do for you:
 
 ## What goes into the Radar (document `config/profile`)
-Only what the page and the scheduled tasks need, with no contact details or background: `country`, `timezone`, `work_week`, `holidays`, `currency`, `local_language` (name and level), `modes`, `target_roles` (main, secondary, adjacent), `levels_accepted`, `exclusions`, `home_area` (the city only), `zone_scale` (city → points from 4 to 20), `job_sites`, `fast_sites`, `service_companies`, `preferred_company_types`, `target_companies`, `weekly_target`, `followup_pref`, `notify`, `ui_language`, `tasks` (name and identifier of the scheduled tasks created). Fictional example:
+Only what the page and the scheduled tasks need, with no contact details or background: `country`, `timezone`, `work_week`, `holidays`, `holiday_dates`, `currency`, `local_language` (name and level), `modes`, `target_roles` (main, secondary, adjacent), `levels_accepted`, `exclusions`, `home_area` (the city only), `zone_scale` (city → points from 4 to 20), `job_sites`, `fast_sites`, `service_companies`, `preferred_company_types`, `target_companies`, `weekly_target`, `followup_pref`, `notify`, `ui_language`, `tasks` (name and identifier of the scheduled tasks created). Fictional example:
 
 ```json
 {
@@ -50,6 +50,7 @@ Only what the page and the scheduled tasks need, with no contact details or back
   "timezone": "Europe/Paris",
   "work_week": ["mon", "tue", "wed", "thu", "fri"],
   "holidays": "legal public holidays of France",
+  "holiday_dates": ["2027-01-01", "2027-04-05", "2027-05-01"],
   "currency": "EUR",
   "local_language": { "name": "French", "level": "native" },
   "modes": ["hybrid", "remote"],
