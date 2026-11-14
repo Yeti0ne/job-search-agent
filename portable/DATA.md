@@ -7,6 +7,7 @@ Le Radar est, dans l'implémentation de référence, une base de documents lue e
 radar/
   offers/<key>.json         une offre par fichier ; <key> = slug(entreprise)-slug(intitulé)-slug(ville)
   contacts/<slug>.json      un contact par fichier ; <slug> = slug du nom
+  suggested_contacts/<id>.json  contacts proposés par un scan, en attente de la décision de l'utilisateur : { "people": [ ... ], "done": { } }
   runs/<AAAA-MM-JJ>.json    journal des passages de veille : { "day": "...", "scans": [ ... ] }
   reports/<AAAA-Www>.json   bilan hebdomadaire
   config/match_grid.json    la grille de notation de l'utilisateur, versionnée

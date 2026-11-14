@@ -42,7 +42,7 @@ You do not have to fill in this file yourself. On first launch, the agent first 
 - Anything the agent must always or never do for you:
 
 ## What goes into the Radar (document `config/profile`)
-Only what the page and the scheduled tasks need, with no contact details or background: `country`, `timezone`, `work_week`, `holidays`, `currency`, `local_language` (name and level), `modes`, `target_roles` (main, secondary, adjacent), `levels_accepted`, `exclusions`, `home_area` (the city only), `zone_scale` (city → points from 4 to 20), `job_sites`, `preferred_company_types`, `target_companies`, `weekly_target`, `followup_pref`, `notify`, `ui_language`, `tasks` (name and identifier of the scheduled tasks created). Fictional example:
+Only what the page and the scheduled tasks need, with no contact details or background: `country`, `timezone`, `work_week`, `holidays`, `currency`, `local_language` (name and level), `modes`, `target_roles` (main, secondary, adjacent), `levels_accepted`, `exclusions`, `home_area` (the city only), `zone_scale` (city → points from 4 to 20), `job_sites`, `fast_sites`, `service_companies`, `preferred_company_types`, `target_companies`, `weekly_target`, `followup_pref`, `notify`, `ui_language`, `tasks` (name and identifier of the scheduled tasks created). Fictional example:
 
 ```json
 {
@@ -59,6 +59,8 @@ Only what the page and the scheduled tasks need, with no contact details or back
   "home_area": "Lyon",
   "zone_scale": { "Lyon": 20, "Villeurbanne": 20, "Grenoble": 12, "Paris": 6 },
   "job_sites": ["LinkedIn", "Indeed", "Welcome to the Jungle", "APEC"],
+  "fast_sites": [],
+  "service_companies": [],
   "preferred_company_types": ["scale-up", "mid-size company"],
   "target_companies": { "A": ["Example Inc."], "B": [] },
   "weekly_target": 10,
@@ -68,7 +70,7 @@ Only what the page and the scheduled tasks need, with no contact details or back
   "tasks": {}
 }
 ```
-(Fictional values: the agent fills in the real document from your profile, after your validation.) `local_language` can also carry `resource_url` (your workbook or learning app), and `job_sites` accepts names or objects `{ "name": "…", "url": "…" }`.
+(Fictional values: the agent fills in the real document from your profile, after your validation.) `local_language` can also carry `resource_url` (your workbook or learning app), and `job_sites` accepts names or objects `{ "name": "…", "url": "…" }`. `fast_sites` and `service_companies` are optional: the sites where postings go fast (the page marks them "Urgent"), and the services or consulting companies of your field that the watch must follow, client-site assignments included.
 
 ## What the Radar page also reads (document `config/cv`)
 So that the page buttons (tailored CV, plan, interview preparation, salary estimate) work, the agent also writes a document `config/cv` from your block 1 and block 3: `name`, `contact` (e-mail, phone, city or country to write on the CV), `facts` (quantified background, skills, education, languages: only what is true), `rules` (your CV rules), `language` (CV language), `max_words` (maximum length). It is the only Radar document that holds your contact details: share the Radar with nobody but yourself.

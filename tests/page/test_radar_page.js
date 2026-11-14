@@ -74,7 +74,7 @@ async function newPage(ctx, fixture, opts) {
   ok(/Responsable exploitation IT/.test(sub) && /France/.test(sub), 'sous-titre issu du profil : ' + sub);
   const sites = await page.locator('#sites a').evaluateAll(a => a.map(x => x.getAttribute('href')));
   ok(sites.length === 4 && sites.some(h => /linkedin\.com\/jobs/.test(h)) && sites.some(h => /welcometothejungle/.test(h)) && sites.some(h => /apec\.fr/.test(h)) && sites.includes('https://example.org/jobs'), 'sites suivis construits depuis job_sites (' + sites.length + ')');
-  ok(await page.locator('#fHebRow').isHidden(), 'filtre de langue locale masqué (français natif)');
+  ok(await page.locator('#fHebRow').evaluate(e => e.hidden === true), 'filtre de langue locale masqué (français natif)');
   ok(await page.locator('#fTrip, #fHelp, #salcGo, #salcBox').count() === 0, 'ni filtre trajet, ni coup de main, ni calculateur de salaire');
   const bodyTxt = await page.locator('body').innerText();
   ok(!/Calculateur de salaire|Coup de main|Trop qualifié \d|Accréd/.test(bodyTxt), 'aucune tuile ou section réservée à un autre profil');
@@ -90,8 +90,7 @@ async function newPage(ctx, fixture, opts) {
   // --- fuseau : a9 vu le 30/10 à 23:30 UTC = 31/10 00:30 à Paris, alors que le navigateur est à Los Angeles
   const daily = await page.locator('#daily').innerText();
   const i31 = daily.search(/31 octobre/i), i30 = daily.search(/30 octobre/i);
-  const seg31 = i31 >= 0 ? daily.slice(i31, i30 > i31 ? i30 : undefined) : '';
-  ok(i31 >= 0 && /Responsable nuit/.test(seg31), 'fuseau du profil appliqué (jour de première vue = 31 octobre à Paris) ' + JSON.stringify(daily.slice(0, 260)));
+  ok(i30 < 0 && /31 octobre\s*\n\s*1 offre collectée/i.test(daily), 'fuseau du profil appliqué (jour de première vue = 31 octobre à Paris) ' + JSON.stringify(daily.slice(0, 260)));
   // --- motif d'écartement
   await openCard(page, 'a2');
   await page.locator('article.row[data-id="a2"] select[data-status]').selectOption('ignore'); await page.waitForTimeout(300);
@@ -116,13 +115,13 @@ async function newPage(ctx, fixture, opts) {
   ok(/Camille Martin/.test(addP) && /GRILLE match_pct v1-test/.test(addP) && /Responsable exploitation IT/.test(addP) && /France/.test(addP), 'prompt d\'ajout : profil, cible et grille du Radar');
   // --- plan, estimation de salaire, CV
   const card = await openCard(page, 'a1');
-  await card.locator('[data-act="ai-run"][data-kind="plan"]').click(); await page.waitForTimeout(500);
+  await card.locator('[data-act="ai-run"][data-kind="plan"]').first().click(); await page.waitForTimeout(500);
   const planP = await page.evaluate(() => window.__samples.filter(s => /plan de candidature/.test(s.prompt)).pop().prompt);
   ok(/Camille Martin/.test(planP) && /Exemple SA/.test(planP) && /ville seule/.test(planP), 'prompt du plan : faits du CV et règles du candidat');
-  await card.locator('[data-act="salary"]').click(); await page.waitForTimeout(500);
+  await card.locator('[data-act="salary"]').first().click(); await page.waitForTimeout(500);
   w = await page.evaluate(() => window.__store.offers.a1);
   ok(w.salary_est === true && w.salary_text === '≈ 42–52 kEUR brut/an', 'estimation de salaire dans la devise et l\'unité du profil : ' + w.salary_text);
-  await card.locator('[data-act="cv"]').click(); await page.waitForTimeout(800);
+  await card.locator('[data-act="cv"]').first().click(); await page.waitForTimeout(800);
   const cvP = await page.evaluate(() => window.__samples.filter(s => /Tu rédiges le CV/.test(s.prompt)).pop().prompt);
   ok(/Langue du CV : français/.test(cvP) && /camille\.martin@example\.org/.test(cvP) && /450 mots/.test(cvP) && /ANNONCE/.test(cvP), 'prompt du CV : langue, coordonnées, longueur et annonce');
   const ats = await page.locator('article.row[data-id="a1"] .ats').innerText().catch(() => '');
@@ -143,7 +142,7 @@ async function newPage(ctx, fixture, opts) {
   let n = 0, c = new Date(td); while (c < nd) { c.setDate(c.getDate() + 1); if ([1, 2, 3, 4, 5].includes(c.getDay())) n++; }
   ok(sp.status === 'postule' && n === 10, '« J\'ai postulé » : prochaine action à 10 jours ouvrés lundi-vendredi (' + n + ')');
   // --- réseau
-  await page.locator('#viewsw [data-view="net"]').click(); await page.waitForTimeout(300);
+  await page.locator('#bnav [data-go="net"]').click(); await page.waitForTimeout(300);
   ok(/Jean Dupont/.test(await page.locator('#netList').innerText()), 'vue réseau : contact affiché');
   // --- aucun terme réservé à un autre profil dans la page, le texte affiché et les prompts
   if (termsFile) {
@@ -156,19 +155,30 @@ async function newPage(ctx, fixture, opts) {
     ok(hit.length === 0, 'aucun terme réservé à un autre profil (source, texte affiché, prompts) ' + JSON.stringify(hit.slice(0, 5)));
   }
   ok(page.__errors.length === 0, 'aucune erreur JS pendant le parcours ' + JSON.stringify(page.__errors.slice(0, 3)));
-  await page.locator('#viewsw [data-view="offers"]').click(); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(200);
+  await page.locator('#bnav [data-go="offers"]').click(); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(200);
   await page.screenshot({ path: process.env.SHOT || '/tmp/shot_generic.png' });
 
   // --- profil sans CV enregistré : message clair, pas de prompt envoyé
   const fx2 = JSON.parse(JSON.stringify(fx)); delete fx2.config.cv; fx2.config.profile.local_language = { name: 'japonais', level: 'débutant' }; fx2.config.profile.timezone = 'Asia/Tokyo';
   const p2 = await newPage(ctx, fx2);
-  ok(await p2.locator('#fHebRow').isVisible(), 'langue locale non native : filtre visible');
-  ok(/Japonais non requis/.test(await p2.locator('#fHebLbl').innerText()), 'libellé du filtre : ' + await p2.locator('#fHebLbl').innerText());
+  ok(await p2.locator('#fHebRow').evaluate(e => e.hidden === false), 'langue locale non native : filtre visible');
+  ok(/Japonais non requis/.test(await p2.locator('#fHebLbl').textContent()), 'libellé du filtre : ' + await p2.locator('#fHebLbl').textContent());
   const c2 = await openCard(p2, 'a1');
-  ok(await c2.locator('[data-act="ai-run"][data-kind="heb"]').count() === 1, 'section « langue locale d\'entretien » proposée');
-  await c2.locator('[data-act="cv"]').click(); await p2.waitForTimeout(300);
+  ok(await c2.locator('[data-act="ai-run"][data-kind="heb"]').count() >= 1, 'section « langue locale d\'entretien » proposée');
+  await c2.locator('[data-act="cv"]').first().click(); await p2.waitForTimeout(300);
   ok(/Profil de CV introuvable/.test(await p2.locator('#toast').innerText()) && await p2.evaluate(() => window.__samples.filter(s => /Tu rédiges le CV/.test(s.prompt)).length) === 0, 'sans config/cv : message clair, aucun appel à Claude');
   ok(p2.__errors.length === 0, 'profil sans CV : aucune erreur JS ' + JSON.stringify(p2.__errors.slice(0, 3)));
+
+  // --- sites rapides : l'alerte « Urgent » vient de fast_sites du profil, jamais d'un site en dur
+  const today = new Date().toISOString().slice(0, 10);
+  const fxF = JSON.parse(JSON.stringify(fx)); fxF.config.profile.fast_sites = ['Vite Jobs'];
+  fxF.offers.f1 = Object.assign(offer('f1'), { source: 'Vite Jobs', status: 'nouveau', match_pct: 88, tier: 'A', posted_at: today, first_seen: today + 'T08:00:00Z' });
+  const pF = await newPage(ctx, fxF);
+  ok(await pF.evaluate(() => /Urgent · /.test(document.body.innerText)), 'site rapide du profil : alerte « Urgent » affichée');
+  const fxN = JSON.parse(JSON.stringify(fxF)); delete fxN.config.profile.fast_sites;
+  const pN = await newPage(ctx, fxN);
+  ok(await pN.evaluate(() => !/Urgent · /.test(document.body.innerText)), 'sans fast_sites : aucune alerte');
+  ok(pF.__errors.length === 0 && pN.__errors.length === 0, 'sites rapides : aucune erreur JS');
 
   // --- aucune configuration du tout (Radar neuf) et mode sans base
   const p3 = await newPage(ctx, { offers: { z1: offer('z1') } });

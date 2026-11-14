@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Radar Emploi</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root {
   /* Concept : console de veille. Bandeau d'état, onglets de statut, liste dense et scannable. Bleu marin de la côte. */
@@ -42,9 +42,9 @@
   color-scheme: dark;
 }
 
-body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.45; padding-block: 20px 40px; padding-inline: 16px; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.45; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 *, *::before, *::after { box-sizing: border-box; }
-.wrap { max-width: 1100px; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
+.wrap { max-width: 120rem; min-width: 0; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; }
@@ -55,6 +55,13 @@ h1 { font-family: var(--f-display); font-weight: 700; font-size: 1.9rem; line-he
 .pulse.ok .dot { background: var(--good); }
 .pulse.late .dot { background: var(--warn); }
 .pulse.ok { color: var(--fg); }
+.modebox { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.modeseg { display: inline-flex; align-items: center; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; align-self: flex-start; max-width: 100%; }
+.modeseg .ml { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); padding: 0 8px 0 10px; }
+.modeseg button { appearance: none; font: inherit; font-size: 0.85rem; font-weight: 500; color: var(--muted); background: none; border: 0; border-radius: 999px; padding: 6px 12px; min-height: 32px; cursor: pointer; }
+.modeseg button:hover { color: var(--fg); }
+.modeseg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.modehint { margin: 0; font-size: 0.78rem; color: var(--muted); max-width: 30rem; }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .stat { background: var(--surface); padding: 10px 14px; min-width: 0; }
@@ -94,11 +101,48 @@ button.stat[aria-pressed="true"] { box-shadow: inset 0 -3px 0 var(--accent); }
 .atsb.ats-good { background: var(--good-soft); color: var(--good); } .atsb.ats-warn { background: var(--warn-soft); color: var(--warn); } .atsb.ats-crit { background: var(--crit-soft); color: var(--crit); }
 .mgrp { display: inline-flex; flex-wrap: wrap; gap: 8px; }
 .tools select { flex: 0 1 auto; }
+.sortgrp { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 4px 2px 10px; border: 1px dashed var(--line); border-radius: 10px; }
+.sortgrp label { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+.sortgrp .btn { white-space: nowrap; }
 .count { margin: 0; color: var(--muted); font-size: 0.85rem; }
 
-.list { display: flex; flex-direction: column; gap: 8px; }
-.list > .empty { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-.row { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 11rem 9.5rem 9.5rem; gap: 6px 16px; align-items: start; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--m, var(--line)) 30%, var(--line)); border-radius: 10px; }
+/* Liste en grille fluide : autant de colonnes de tuiles que la largeur le permet (1 sur téléphone, 2 ou 3 sur grand écran).
+   Chaque tuile est un conteneur : sa mise en page suit SA largeur (compacte, moyenne, large), pas celle de l'écran. */
+.list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 34rem), 1fr)); gap: 8px; align-items: start; }
+.list > .empty { grid-column: 1 / -1; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.cell { container-type: inline-size; min-width: 0; }
+.cell:has(.detail:not([hidden])) { grid-column: 1 / -1; }
+.row { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 6px 16px; align-items: start; padding: 12px; border: 1px solid color-mix(in srgb, var(--m, var(--line)) 30%, var(--line)); border-radius: 10px; min-width: 0; }
+.row > .dates, .row > .status, .row > .actions, .row > .detail { grid-column: 2; }
+.row > .actions { justify-content: flex-start; }
+.row > .status { width: auto; justify-self: start; min-width: 9rem; max-width: 100%; }
+@container (min-width: 34rem) {
+  .cell .row, .cell .crow { grid-template-columns: 2rem minmax(0, 1fr) 11rem; padding: 12px 16px; }
+  .cell .row > .main { grid-column: 2; grid-row: 1 / span 3; }
+  .cell .row > .dates { grid-column: 3; grid-row: 1; }
+  .cell .row > .status { grid-column: 3; grid-row: 2; width: 100%; justify-self: stretch; min-width: 0; }
+  .cell .row > .actions { grid-column: 3; grid-row: 3; }
+  .cell .row > .detail { grid-column: 2 / -1; grid-row: 4; }
+  .cell .crow > .main { grid-column: 2; grid-row: 1 / span 2; }
+  .cell .crow > .dates { grid-column: 3; grid-row: 1; }
+  .cell .crow > .status { grid-column: 3; grid-row: 2; width: 100%; justify-self: stretch; min-width: 0; }
+  .cell .crow > .acts { grid-column: 2 / -1; grid-row: 3; }
+  .cell .crow > .detail { grid-column: 2 / -1; grid-row: 4; }
+}
+@container (min-width: 60rem) {
+  .cell .row { grid-template-columns: 2rem minmax(0, 1fr) 11rem 9.5rem 9.5rem; }
+  .cell .row > .main { grid-row: 1; }
+  .cell .row > .dates { grid-column: 3; grid-row: 1; }
+  .cell .row > .status { grid-column: 4; grid-row: 1; }
+  .cell .row > .actions { grid-column: 5; grid-row: 1; justify-content: flex-end; }
+  .cell .row > .detail { grid-column: 2 / -1; grid-row: 2; }
+  .cell .crow { grid-template-columns: 2rem minmax(0, 1fr) 10rem 9.5rem; }
+  .cell .crow > .main { grid-row: 1; }
+  .cell .crow > .dates { grid-column: 3; grid-row: 1; }
+  .cell .crow > .status { grid-column: 4; grid-row: 1; }
+  .cell .crow > .acts { grid-row: 2; }
+  .cell .crow > .detail { grid-row: 3; }
+}
 .row.is-new { box-shadow: inset 3px 0 0 var(--accent); }
 .helpers { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; align-items: center; }
 .helpers .hl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
@@ -114,6 +158,14 @@ button.stat[aria-pressed="true"] { box-shadow: inset 0 -3px 0 var(--accent); }
 .row.is-new { box-shadow: inset 4px 0 0 var(--accent); }
 .pct { font-family: var(--f-mono); font-size: 0.72rem; font-weight: 500; color: var(--m); border: 1px solid color-mix(in srgb, var(--m) 55%, transparent); padding: 1px 6px; border-radius: 4px; white-space: nowrap; font-variant-numeric: tabular-nums; vertical-align: 1px; }
 .city { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; white-space: nowrap; color: hsl(var(--h) var(--city-s) var(--city-l)); background: hsl(var(--h) var(--city-s) var(--city-bgl)); border: 1px solid hsl(var(--h) var(--city-s) var(--city-l) / 0.35); }
+button.city { appearance: none; font-family: inherit; line-height: inherit; cursor: pointer; }
+button.city:hover { border-color: hsl(var(--h) var(--city-s) var(--city-l)); }
+.city.is-in { box-shadow: 0 0 0 2px var(--good); font-weight: 700; }
+.city.is-out { box-shadow: 0 0 0 2px var(--crit); text-decoration: line-through; opacity: 0.75; }
+.citybar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 12px; border: 1px dashed var(--accent); border-radius: 10px; background: var(--accent-soft); font-size: 0.85rem; }
+.citybar .cb-l { font-weight: 600; }
+.citybar .cb-g { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.citybar .cb-g b { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
 .trip { font-family: var(--f-mono); font-size: 0.76rem; font-weight: 500; padding: 1px 7px; border-radius: 4px; text-decoration: none; white-space: nowrap; font-variant-numeric: tabular-nums; border: 1px solid transparent; }
 .trip.t-short { background: var(--good-soft); color: var(--good); }
 .trip.t-mid { background: var(--warn-soft); color: var(--warn); }
@@ -139,13 +191,23 @@ a.trip:hover { border-color: currentColor; }
 .cv h5 { margin: 12px 0 4px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); border-bottom: 1px solid var(--line); padding-bottom: 2px; }
 .todo { color: var(--crit); font-weight: 700; background: color-mix(in srgb, var(--crit) 12%, transparent); border-radius: 3px; padding: 0 2px; }
 .cvmatch { border-left: 3px solid var(--accent); }
+.cvfill { margin-top: 8px; border: 1px solid var(--crit); border-radius: 8px; padding: 10px 12px; background: color-mix(in srgb, var(--crit) 6%, var(--surface)); display: grid; gap: 8px; }
+.cvfill h4 { margin: 0; font-size: 0.85rem; color: var(--crit); text-transform: none; letter-spacing: 0; }
+.cvfill label { display: grid; gap: 3px; font-size: 0.78rem; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.cvfill input { width: 100%; font: inherit; font-size: 0.9rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 0; }
 .cv .job { margin: 12px 0 3px; padding-left: 8px; border-left: 3px solid var(--accent); }
 .cv .job b { display: block; font-size: 0.95rem; }
 .cv .jobmeta { display: block; color: var(--muted); font-size: 0.8rem; }
 .cv ul { margin: 0 0 0 4px; padding-left: 1.1rem; } .cv li { margin: 2px 0; } .cv p { margin: 4px 0; }
 .prep li, .prep p { unicode-bidi: plaintext; }
+/* Génération en direct : le navigateur ne choisit pas ces boîtes comme point d'ancrage du scroll (sinon la page saute quand le texte est réécrit), et la boîte existe dès le départ. */
+.cv, .prep { overflow-anchor: none; }
+/* Dans la fiche, la fiche défile déjà : les boîtes CV / notes ne gardent pas leur propre défilement (sinon elles avalent le scroll et la fiche reste bloquée puis saute). */
+.sheet .cv, .sheet .prep { max-height: none; overflow: visible; }
+.cv:empty, .prep:empty { min-height: 3.2rem; }
+.cv:empty::before, .prep:empty::before { content: "Claude rédige…"; color: var(--muted); font-style: italic; }
 /* Calculateur de salaire */
-.salc-in { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 8px 12px; margin: 8px 0; }
+.salc-in { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 8px 12px; margin: 8px 0; }
 .salc-in label { display: flex; flex-direction: column; gap: 3px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); min-width: 0; }
 .salc-in select, .salc-in input { font: inherit; font-size: 0.92rem; text-transform: none; letter-spacing: 0; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; width: 100%; }
 .salc-in .salw { grid-column: 1 / -1; }
@@ -184,6 +246,8 @@ a.trip:hover { border-color: currentColor; }
 .blink { width: 10px; height: 10px; border-radius: 50%; background: var(--crit); display: inline-block; animation: relblink 1s steps(2, start) infinite; }
 .badge-rel { font-size: 0.7rem; font-weight: 700; color: #fff; background: var(--crit); border-radius: 6px; padding: 1px 6px; margin-left: 6px; animation: relblink 1.2s steps(2, start) infinite; }
 .row.rel-due { animation: relpulse 1.8s ease-in-out infinite; }
+.badge-jf { font-size: 0.7rem; font-weight: 700; color: #fff; background: var(--crit); border-radius: 6px; padding: 1px 6px; margin-right: 6px; white-space: nowrap; }
+.row.jf-hot { border-left: 4px solid var(--crit); }
 @keyframes relblink { to { visibility: hidden; } }
 @keyframes relpulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--crit) 45%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--crit) 0%, transparent); } }
 @media (prefers-reduced-motion: reduce) { .relbar, .blink, .badge-rel, .row.rel-due { animation: none; } }
@@ -204,7 +268,18 @@ a.trip:hover { border-color: currentColor; }
 .viewsw button + button { border-left: 1px solid var(--line); }
 .viewsw button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 .viewsw i { font-style: normal; font-family: var(--f-mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; opacity: 0.85; }
-.crow { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 10rem 9.5rem; gap: 6px 16px; align-items: start; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.sugl { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sugl li { padding: 8px 10px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-soft); font-size: 0.88rem; }
+.sugl li .m { color: var(--muted); display: block; margin-top: 2px; overflow-wrap: anywhere; }
+.sugbox { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin: 0 0 14px; }
+.sugbox h3 { margin: 0 0 4px; font-size: 1rem; }
+.sugbox p { margin: 0 0 8px; font-size: 0.88rem; color: var(--muted); }
+.sugbox ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.sugbox li { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 0.88rem; }
+.sugbox li .m { color: var(--muted); display: block; margin-top: 2px; overflow-wrap: anywhere; }
+.crow { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 6px 16px; align-items: start; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); min-width: 0; }
+.crow > .dates, .crow > .status { grid-column: 2; }
+.crow > .status { width: auto; justify-self: start; min-width: 9rem; max-width: 100%; }
 .crow.due { border-color: var(--crit); }
 .crow .detail { grid-column: 2 / -1; }
 .crow .acts { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -222,7 +297,6 @@ a.trip:hover { border-color: currentColor; }
 .rtrow.duer.dk-interview { border-left-color: var(--good); }
 .rtrow.duer.dk-reply { border-left-color: var(--accent); }
 .rtsub { margin: 10px 0 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
-@media (max-width: 720px) { .crow { grid-template-columns: 2rem minmax(0, 1fr); } .crow > .dates, .crow > .status { grid-column: 2; } }
 .cvbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .cvbar select { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
 .prep ul { margin: 0; padding-left: 1.1rem; }
@@ -276,7 +350,7 @@ a.trip:hover { border-color: currentColor; }
 .actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
 .btn { font: inherit; font-size: 0.85rem; font-weight: 500; color: var(--accent); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 9px; cursor: pointer; text-decoration: none; line-height: 1.2; }
 .btn:hover { border-color: var(--accent); }
-.detail { grid-column: 2 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 12px 24px; padding-top: 10px; border-top: 1px dashed var(--line); margin-top: 4px; }
+.detail { grid-column: 2 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 12px 24px; padding-top: 10px; border-top: 1px dashed var(--line); margin-top: 4px; }
 .detail[hidden] { display: none; }
 .detail h4 { margin: 0 0 3px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 500; }
 .detail p, .detail ul { margin: 0; font-size: 0.9rem; overflow-wrap: anywhere; }
@@ -296,7 +370,7 @@ summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
 details > div { padding-bottom: 14px; color: var(--muted); font-size: 0.92rem; }
 details p { margin: 0 0 8px; }
 details a { color: var(--accent); }
-.sites { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 14px 24px; }
+.sites { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 14px 24px; }
 .sites h4 { margin: 0 0 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 500; }
 .sites ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
 .scanlog { width: 100%; border-collapse: collapse; font-family: var(--f-mono); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
@@ -306,12 +380,20 @@ details a { color: var(--accent); }
 
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 9px 14px; border-radius: 8px; font-size: 0.88rem; max-width: calc(100vw - 32px); z-index: 30; }
 
+.totop { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 15; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; height: 44px; padding: 0 14px; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--accent-ink); background: var(--accent); border: 1px solid var(--accent); border-radius: 999px; box-shadow: 0 2px 10px rgba(0,0,0,0.25); cursor: pointer; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+.totop.show { opacity: 1; transform: none; pointer-events: auto; }
+.totop:hover { filter: brightness(1.08); }
+.totop svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 520px) { .totop .lbl { display: none; } .totop { padding: 0; width: 44px; } }
+@media (prefers-reduced-motion: reduce) { .totop { transition: none; } }
+
 @media (max-width: 760px) {
   h1 { font-size: 1.55rem; }
-  .row { grid-template-columns: 2rem minmax(0, 1fr); padding: 12px; }
-  .row > .dates, .row > .status, .row > .actions, .detail { grid-column: 2; }
-  .actions { justify-content: flex-start; }
-  .status { width: auto; justify-self: start; min-width: 9rem; }
+}
+@media (max-width: 400px) {
+  .tools > * { flex: 1 1 100%; }
+  .tools .mgrp, .tools .sortgrp { display: flex; }
+  .sortgrp select { flex: 1 1 8rem; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
@@ -423,17 +505,278 @@ details a { color: var(--accent); }
   .qz-row { grid-template-columns: 5.4rem minmax(0, 1fr) 3.8rem; gap: 6px; font-size: 0.82rem; }
   .qz-q { font-size: 1.15rem; }
 }
+/* ===== Refonte UX/UI : navigation du bas, filtres repliables, étapes guidées ===== */
+.bnav { display: none; }
+@media (min-width: 761px) {
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; background: none; border: 0; border-radius: 0; overflow: visible; }
+  .stat { flex: 1 1 8.5rem; border: 1px solid var(--line); border-radius: 12px; }
+}
+.fmore { flex: 1 1 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.fmore > summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 14px; font-weight: 600; font-size: 0.92rem; color: var(--fg); }
+.fmore > summary::-webkit-details-marker { display: none; }
+.fmore > summary::after { content: "▾"; margin-left: auto; color: var(--muted); }
+.fmore[open] > summary::after { content: "▴"; }
+.fmore .fcount { background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 0 8px; font-size: 0.78rem; font-family: var(--f-mono); line-height: 1.5; }
+.fmore .fcount:empty { display: none; }
+.fmore .fbody { padding: 2px 14px 14px; }
+.stepper { border: 2px solid var(--accent); border-radius: 14px; padding: 14px; background: var(--surface); display: grid; gap: 10px; }
+.stepper .sthead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 10px; }
+.stepper .sthead b { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); font-weight: 600; }
+.stepper .sthead > span:not(.badge-jf) { font-size: 0.8rem; color: var(--muted); }
+.stepper ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; }
+.stepper li { flex: 1; display: grid; gap: 5px; font-size: 0.78rem; color: var(--muted); }
+.stepper li i { display: block; height: 6px; border-radius: 999px; background: var(--line); }
+.stepper li.done { color: var(--good); font-weight: 600; }
+.stepper li.done i { background: var(--good); }
+.stepper li.now { color: var(--fg); font-weight: 700; }
+.stepper li.now i { background: var(--accent); }
+.stepper h5 { margin: 0; font-size: 1.02rem; font-weight: 600; }
+.stepper p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+.stepper .stcta { display: flex; flex-wrap: wrap; gap: 8px; }
+.stepper .stcta .btn { min-height: 44px; padding: 10px 16px; font-size: 0.95rem; }
+@media (max-width: 760px) {
+  body { padding-top: 12px; padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  .top .sub { display: none; }
+  .top h1 { font-size: 1.4rem; }
+  .jump { margin-top: 0; min-height: 44px; }
+  #jumpSeason { display: none; }
+  .viewsw { display: none; }
+  .bnav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+  .bnav button { appearance: none; border: 0; background: none; font: inherit; font-size: 0.72rem; font-weight: 600; color: var(--muted); min-height: 52px; border-radius: 12px; display: grid; justify-items: center; align-content: center; gap: 2px; cursor: pointer; }
+  .bnav button svg { width: 22px; height: 22px; }
+  .bnav button[aria-current="true"] { color: var(--accent); background: var(--accent-soft); }
+  .totop { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .stats { display: flex; overflow-x: auto; gap: 8px; background: none; border: 0; border-radius: 0; scroll-snap-type: x proximity; }
+  .stat { flex: 0 0 7.5rem; border: 1px solid var(--line); border-radius: 12px; scroll-snap-align: start; }
+  .tools input[type="search"], .tools select, .tools input { min-height: 44px; font-size: 16px; }
+  .chk { min-height: 44px; }
+  .btn { min-height: 40px; padding: 8px 12px; }
+  .row { padding: 14px; }
+  .rtrow .aibar .btn.solid { flex: 1 1 100%; min-height: 48px; }
+  .rtrow .aibar .btn { min-height: 44px; }
+  .detail input, .detail select, .detail textarea { font-size: 16px; }
+}
+/* ===== Skin v2 : fidèle aux maquettes (tuiles, fiche plein écran, Aujourd'hui, bureau) ===== */
+:root {
+  --bg: #F4F6F8; --surface: #FFFFFF; --fg: #121821; --muted: #556070; --line: #E1E5EB; --surface-2: #E8ECF1;
+  --accent: #0A6B7C; --accent-soft: #E3F2F5;
+  --jf-bg: #FBEAE8; --jf-ink: #9A2A23; --jf-line: #E8B9B4;
+  --pill-bg: #E3F2F5; --pill-ink: #07505D; --chip-bg: #EEF0F3; --chip-ink: #3F4856;
+  --warn-bg: #FFF3DC; --warn-ink: #6E4000; --ok-bg: #E3F4EA; --ok-ink: #17613B;
+  --f-display: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; --f-body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --jf-bg: #3E1D1A; --jf-ink: #F5A29B; --jf-line: #6B3430; --pill-bg: #12343C; --pill-ink: #8AD8E8; --chip-bg: #1D2B35; --chip-ink: #B6C4CF; --warn-bg: #3A2B10; --warn-ink: #E3A44A; --ok-bg: #143525; --ok-ink: #5CCB91; }
+}
+:root[data-theme="dark"] { --jf-bg: #3E1D1A; --jf-ink: #F5A29B; --jf-line: #6B3430; --pill-bg: #12343C; --pill-ink: #8AD8E8; --chip-bg: #1D2B35; --chip-ink: #B6C4CF; --warn-bg: #3A2B10; --warn-ink: #E3A44A; --ok-bg: #143525; --ok-ink: #5CCB91; }
+.toast { z-index: 60; }
+.legend { display: none; }
+
+/* En-tête */
+.top { align-items: center; gap: 8px 16px; }
+.top > div:first-child { flex: 1 1 14rem; min-width: 0; }
+.top h1 { font-size: 1.75rem; letter-spacing: -0.02em; }
+.top-date { font-size: 0.82rem; color: var(--muted); }
+.addfab { flex: none; width: 48px; height: 48px; border-radius: 999px; border: 0; background: var(--accent); color: var(--accent-ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.addfab svg { width: 22px; height: 22px; }
+.pulse { order: 3; flex: 1 1 100%; }
+.ov-head h2 { margin: 4px 0 0; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+.ov-head p { margin: 2px 0 0; font-size: 0.82rem; color: var(--muted); }
+
+/* Pastilles */
+.pctpill { flex: none; min-width: 52px; text-align: center; background: var(--pill-bg); color: var(--pill-ink); border-radius: 10px; padding: 6px 8px; font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.pctpill.lo { background: var(--chip-bg); color: var(--chip-ink); }
+.chip { display: inline-flex; align-items: center; gap: 5px; background: var(--chip-bg); color: var(--chip-ink); border-radius: 999px; padding: 3px 10px; font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+.chip svg { width: 13px; height: 13px; }
+.chip.chip-postule { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent); font-weight: 700; }
+.chip-new { background: var(--pill-bg); color: var(--pill-ink); }
+.chip.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.chip.jf { background: var(--jf-bg); color: var(--jf-ink); }
+.jfban { display: flex; align-items: center; gap: 8px; background: var(--jf-bg); color: var(--jf-ink); border-radius: 10px; padding: 8px 10px; font-size: 0.82rem; font-weight: 600; }
+
+/* Onglets en pastilles, recherche */
+.tabs { border-bottom: 0; gap: 8px; padding-bottom: 2px; }
+.tab { border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); min-height: 44px; padding: 0 16px; margin-bottom: 0; font-weight: 500; }
+.tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.tab i, .tab[aria-pressed="true"] i { color: inherit; opacity: 0.8; }
+.tools input[type="search"] { height: 48px; border-radius: 12px; font-size: 1rem; }
+
+/* Ordre : titre, recherche et filtres, onglets, liste */
+#offersView { display: flex; flex-direction: column; gap: 12px; }
+#offersView > .ov-head { order: 0; }
+#offersView > .tools { order: 1; }
+#offersView > .tabs { order: 2; margin-top: 0; align-items: center; }
+#offersView > .citybar { order: 3; }
+#offersView > .count { order: 4; margin: 0; }
+#offersView > .list { order: 5; }
+.tab { align-items: center; white-space: nowrap; line-height: 1.2; }
+.tl-meta * { font-family: inherit !important; font-size: inherit !important; }
+.sh-chips .chip, .sh-chips .chip * { font-family: inherit !important; font-size: 0.78rem !important; }
+/* Tuiles */
+.list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 12px; }
+.list .cell .row { display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: none; }
+.list .cell .row.jf-hot { border-left: 1px solid var(--line); }
+.list .cell .row.is-new { box-shadow: none; }
+.list .cell .row.is-fav { border-color: #C58A00; }
+.list .cell .row.is-open { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.cell:has(.sheet:not([hidden])) { grid-column: auto; container-type: normal; }
+.tl-top { display: flex; gap: 12px; align-items: flex-start; }
+.tl-main { flex: 1; min-width: 0; }
+.tl-main h3 { margin: 0; font-size: 1rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.tl-co { font-size: 0.82rem; color: var(--muted); overflow-wrap: anywhere; }
+.tl-meta { font-size: 0.82rem; color: var(--muted); overflow-wrap: anywhere; }
+.tl-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.tl-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+.btn.go { min-height: 44px; padding: 0 14px; border-radius: 12px; font-weight: 600; font-size: 0.88rem; color: var(--fg); background: var(--surface); border-color: #C9D0DA; }
+.btn.go.solid { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.star { flex: none; border: 0; width: 44px; height: 44px; margin: -6px -6px 0 0; font-size: 1.4rem; background: none; padding: 0; }
+
+/* Fiche (plein écran sur mobile, tiroir sur bureau) */
+body:has(.sheet:not([hidden])) .totop { display: none; }
+.sheet { position: fixed; inset: 0; z-index: 40; background: var(--bg); overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding: 0; margin: 0; border: 0; }
+.sheet[hidden] { display: none; }
+.sheet .sh-bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: calc(8px + env(safe-area-inset-top, 0px)) 8px 6px; background: var(--bg); }
+.sheet .sh-back { appearance: none; border: 0; background: none; font: inherit; font-weight: 600; font-size: 0.95rem; color: var(--accent); min-height: 48px; padding: 0 10px; display: inline-flex; align-items: center; gap: 2px; cursor: pointer; }
+.sheet .sh-acts { display: inline-flex; align-items: center; }
+.sheet .sh-ic { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; font-size: 1.3rem; }
+.sheet .sh-body { flex: 1; padding: 4px 16px 24px; display: flex; flex-direction: column; gap: 16px; max-width: 46rem; width: 100%; margin: 0 auto; }
+.sheet .sh-title h2 { margin: 0; font-size: 1.65rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.sheet .sh-title .co { color: var(--muted); font-size: 1rem; margin-top: 4px; }
+.sheet .sh-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.sheet .sh-jf { display: flex; gap: 10px; align-items: center; background: var(--jf-bg); border: 1px solid var(--jf-line); color: var(--jf-ink); border-radius: 14px; padding: 12px 14px; font-size: 0.88rem; }
+.sheet .sh-jf svg { flex: none; width: 20px; height: 20px; }
+.sheet .sh-foot { position: sticky; bottom: 0; display: flex; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); }
+.sheet .sh-foot .btn { min-height: 52px; border-radius: 14px; font-size: 1rem; font-weight: 600; padding: 0 18px; }
+.sheet .sh-foot .solid { flex: 1; }
+.sheet .card, .sheet .dgrid > div { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.sheet .card { display: flex; flex-direction: column; gap: 12px; }
+.sheet .card h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+.sheet .card p { margin: 0; }
+.sheet .card label { font-size: 0.82rem; color: var(--muted); }
+.sheet .card select.status { width: 100%; min-height: 48px; font-size: 1rem; }
+.sheet .dgrid { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 0; border: 0; margin: 0; }
+.sheet .dgrid .wide { grid-column: auto; }
+.sheet .card.tech { padding: 0 16px; }
+.sheet .card.tech summary { cursor: pointer; font-weight: 600; min-height: 48px; display: flex; align-items: center; }
+.sheet .card.tech .dgrid { padding-bottom: 16px; }
+.sheet .card.tech .dgrid > div { border: 0; padding: 0; }
+.sbars2 { display: flex; flex-direction: column; gap: 8px; }
+.sbar2 { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) 3rem; gap: 10px; align-items: center; font-size: 0.82rem; }
+.sbar2 .l { color: var(--muted); }
+.sbar2 .t { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.sbar2 .t i { display: block; height: 100%; background: var(--accent); }
+.sbar2 b { text-align: right; font-variant-numeric: tabular-nums; }
+.req { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 0.9rem; }
+.req span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.req em { font-style: normal; flex: none; border-radius: 999px; padding: 2px 10px; font-size: 0.75rem; font-weight: 600; background: var(--chip-bg); color: var(--chip-ink); }
+.req em.gap { background: var(--warn-bg); color: var(--warn-ink); }
+.stepper { border-radius: 18px; }
+
+/* Aujourd'hui */
+.routine { border: 0; background: none; padding: 0; margin: 12px 0; }
+#routine:not([hidden]) { display: flex; flex-direction: column; gap: 20px; }
+.td-sec { display: flex; flex-direction: column; gap: 10px; }
+.td-h { display: flex; align-items: center; gap: 8px; padding: 0 4px; }
+.td-h h2, .td-wh h2 { margin: 0; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.td-n { background: var(--fg); color: var(--bg); border-radius: 999px; font-size: 0.75rem; font-weight: 600; padding: 1px 8px; }
+.td-s { font-size: 0.75rem; color: var(--muted); }
+.td-jf { background: var(--jf-bg); border: 1px solid var(--jf-line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.td-jfh { display: flex; align-items: center; gap: 8px; color: var(--jf-ink); }
+.td-jfh svg { width: 18px; height: 18px; }
+.td-jfs { font-size: 0.75rem; color: var(--jf-ink); opacity: 0.85; margin-top: -6px; }
+.td-jfrow, .td-ap { appearance: none; border: 0; font: inherit; text-align: left; cursor: pointer; width: 100%; color: var(--fg); display: flex; align-items: center; gap: 12px; min-height: 56px; }
+.td-jfrow { background: var(--surface); border-radius: 12px; padding: 12px; }
+.td-t { flex: 1; min-width: 0; display: block; }
+.td-t b { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.td-t small { display: block; font-size: 0.82rem; color: var(--muted); overflow-wrap: anywhere; }
+.td-left { flex: none; text-align: right; }
+.td-left b { display: block; color: var(--jf-ink); font-size: 0.88rem; }
+.td-left small { font-size: 0.75rem; color: var(--muted); }
+.td-first .rtsub { display: none; }
+.td-week { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.td-wh { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; }
+.td-wh h2 { font-size: 0.95rem; text-transform: none; letter-spacing: 0; color: var(--fg); }
+.td-wh span { font-size: 0.82rem; color: var(--muted); }
+.td-big b { font-size: 2.1rem; letter-spacing: -0.02em; }
+.td-big span { color: var(--muted); margin-left: 6px; }
+.td-week .bar { height: 8px; max-width: none; margin: 0; }
+.td-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.td-ct { display: flex; gap: 12px; align-items: flex-start; }
+.td-ct h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+.td-ct .co { font-size: 0.82rem; color: var(--muted); }
+.td-steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; font-size: 0.75rem; color: var(--muted); }
+.td-steps li { flex: 1; border-top: 3px solid var(--line); padding-top: 6px; }
+.td-steps li.done { border-top-color: var(--ok-ink); color: var(--ok-ink); font-weight: 600; }
+.td-btns { display: flex; gap: 8px; }
+.td-btns .btn { min-height: 48px; border-radius: 12px; font-weight: 600; font-size: 0.9rem; }
+.td-btns .solid { flex: 1; }
+.td-tert { display: flex; gap: 16px; }
+.lnk { appearance: none; border: 0; background: none; font: inherit; font-size: 0.82rem; color: var(--accent); cursor: pointer; min-height: 36px; padding: 0; }
+.td-aps { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.td-ap { background: none; border-top: 1px solid var(--line); padding: 12px 16px; }
+.td-ap:first-child { border-top: 0; }
+.td-net { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+
+/* Bureau : barre latérale + tiroir de fiche */
+@media (min-width: 1100px) {
+  .wrap { margin-left: 224px; }
+  .viewsw { display: none; }
+  .bnav { display: flex; flex-direction: column; gap: 6px; position: fixed; left: 0; top: 0; bottom: 0; width: 224px; z-index: 20; background: var(--surface); border-right: 1px solid var(--line); padding: 24px 14px; }
+  .bnav::before { content: "Radar Emploi"; font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; padding: 0 10px 18px; }
+  .bnav button { appearance: none; border: 0; background: none; font: inherit; font-weight: 600; font-size: 0.95rem; color: var(--muted); min-height: 44px; padding: 0 12px; border-radius: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; text-align: left; }
+  .bnav button svg { width: 20px; height: 20px; flex: none; }
+  .bnav button[aria-current="true"] { background: var(--accent-soft); color: var(--accent); }
+  .sheet { inset: 0 0 0 auto; width: min(680px, 50vw); border-left: 1px solid var(--line); box-shadow: -8px 0 30px rgba(18, 24, 33, 0.08); }
+  body:has(.sheet:not([hidden])) .wrap { margin-right: min(680px, 50vw); }
+}
+@media (max-width: 1099px) {
+  body:has(.sheet:not([hidden])) { overflow: hidden; }
+}
+/* ===== Filtres et tri : le panneau reste dans la hauteur et la largeur de l'écran ===== */
+.fmore { min-width: 0; max-width: 100%; }
+.fmore .fbody { min-width: 0; max-width: 100%; }
+.fmore .fbody > *, .fmore .fbody select, .fmore .fbody input[type="search"] { max-width: 100%; min-width: 0; }
+.fmore .fbody .sortgrp { max-width: 100%; }
+.fmore .fbody .sortgrp select { flex: 1 1 10rem; }
+.fmore .fdone { display: none; }
+@media (min-width: 761px) {
+  .fmore[open] .fbody { max-height: min(60vh, 30rem); max-height: min(60dvh, 30rem); overflow-y: auto; overscroll-behavior: contain; }
+}
+@media (max-width: 760px) {
+  body:has(.fmore[open]) { overflow: hidden; }
+  body:has(.fmore[open]) .totop { display: none; }
+  .fmore[open] { position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100dvh; z-index: 45; display: flex; flex-direction: column; margin: 0; border: 0; border-radius: 0; background: var(--bg); padding-top: env(safe-area-inset-top, 0px); }
+  .fmore[open] > summary { flex: none; min-height: 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: var(--surface); border-bottom: 1px solid var(--line); font-size: 1.05rem; }
+  .fmore[open] .fbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; align-content: flex-start; padding: 14px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+  .fmore[open] .fbody select, .fmore[open] .fbody input[type="search"], .fmore[open] .fbody > .btn, .fmore[open] .fbody .sortgrp, .fmore[open] .fbody .mgrp { flex: 1 1 100%; width: 100%; }
+  .fmore[open] .fbody .sortgrp select { width: auto; }
+  .fmore[open] { overflow: hidden; }
+  .fmore[open]::details-content { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .fmore[open] .fbody { max-height: calc(100vh - 150px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); max-height: calc(100dvh - 150px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); touch-action: pan-y; }
+  .fmore[open] .fdone { display: block; flex: none; width: auto; min-height: 52px; border-radius: 14px; font-size: 1rem; font-weight: 600; margin: 10px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+}
 </style>
 
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>Radar Emploi</h1>
+      <div class="top-date" id="topDate"></div>
+      <h1>Aujourd'hui</h1>
       <p class="sub" id="subLine">Veille des offres et suivi des candidatures.</p>
     </div>
+    <button type="button" class="addfab" id="addBtn" aria-controls="addPanel" aria-expanded="false" aria-label="Ajouter une annonce" title="Ajouter une annonce"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
     <div class="pulse" id="pulse" role="status"><span class="dot"></span><span id="pulseText">Connexion à la base…</span></div>
-    <button type="button" class="jump" id="addBtn" aria-controls="addPanel" aria-expanded="false">+ Ajouter une annonce</button>
-    <button type="button" class="jump" id="jumpSeason" aria-controls="seasonBox">↓ Suivi et saisonnalité des ajouts</button>
+    <div class="modebox">
+      <div class="modeseg" id="modeSeg" role="group" aria-label="Mode de modèle IA">
+        <span class="ml">IA</span>
+        <button type="button" data-mode="eco" aria-pressed="false">Éco</button>
+        <button type="button" data-mode="auto" aria-pressed="true">Auto</button>
+        <button type="button" data-mode="deep" aria-pressed="false">Approfondi</button>
+      </div>
+      <p class="modehint" id="modeHint" aria-live="polite"></p>
+    </div>
+    <button type="button" class="jump" id="jumpSeason" aria-controls="seasonBox" hidden>↓ Suivi et saisonnalité des ajouts</button>
   </header>
 
   <section class="dbbanner" id="dbBanner" role="alert" hidden><span id="dbMsg"></span><button type="button" class="btn" id="dbClose">Fermer</button></section>
@@ -457,12 +800,14 @@ details a { color: var(--accent); }
   <div class="viewsw" id="viewsw" role="group" aria-label="Vue"><button type="button" data-view="offers" aria-pressed="true">Offres<i id="vwO"></i></button><button type="button" data-view="net" aria-pressed="false">Réseau<i id="vwN"></i></button></div>
 
   <div id="offersView">
+  <div class="ov-head"><h2>Offres</h2><p>Les offres urgentes passent en premier.</p></div>
   <nav class="tabs" id="tabs" aria-label="Statut des offres"></nav>
 
   <div class="tools">
-    <input id="q" type="search" placeholder="Poste, ville, mot-clé" aria-label="Rechercher">
-    <input id="fCo" type="search" list="coList" placeholder="Société" aria-label="Rechercher par société" autocomplete="off">
+    <input id="q" type="search" placeholder="Poste, ville, mot-clé, lien de l'offre" aria-label="Rechercher une offre : poste, société, ville, mot-clé ou lien de l'annonce" autocomplete="off">
     <datalist id="coList"></datalist>
+    <details class="fmore" id="fMore"><summary>Filtres et tri<span class="fcount" id="fCount"></span></summary><div class="tools fbody">
+    <input id="fCo" type="search" list="coList" placeholder="Société" aria-label="Rechercher par société" autocomplete="off">
     <select id="fTier" aria-label="Tier">
       <option value="">Tous les tiers</option>
       <option value="A">Tier A</option>
@@ -471,20 +816,35 @@ details a { color: var(--accent); }
     </select>
     <select id="fCity" aria-label="Ville"><option value="">Toutes les villes</option></select>
     <span class="mgrp" id="fMatch" role="group" aria-label="Match (plusieurs choix possibles)">
-      <label class="chk"><input type="checkbox" value="hi"> Match ≥ 85 % (vert)</label>
-      <label class="chk"><input type="checkbox" value="mid"> 70–84 % (jaune)</label>
-      <label class="chk"><input type="checkbox" value="lo"> &lt; 70 % (orange)</label>
+      <label class="chk"><input type="checkbox" value="hi"> Match ≥ 85 %</label>
+      <label class="chk"><input type="checkbox" value="mid"> Match 70–84 %</label>
+      <label class="chk"><input type="checkbox" value="lo"> Match &lt; 70 %</label>
     </span>
     <select id="fSource" aria-label="Source"><option value="">Toutes les sources</option></select>
     <label class="chk" id="fHebRow"><input type="checkbox" id="fHeb"> <span id="fHebLbl">Langue locale non requise</span></label>
     <label class="chk"><input type="checkbox" id="fMode"> Hybride / remote</label>
-    <select id="fSort" aria-label="Tri">
-      <option value="recent">Plus récentes</option>
-      <option value="tier">Meilleur fit d'abord</option>
-      <option value="repost">Plus republiées</option>
-      <option value="seen">Vues récemment</option>
-    </select>
+    <span class="sortgrp" role="group" aria-label="Tri des offres affichées">
+      <label for="fSort">Trier par</label>
+      <select id="fSort" aria-label="Trier par">
+        <option value="recent">Date d'ajout (vue la 1re fois)</option>
+        <option value="posted">Date de publication</option>
+        <option value="seen">Dernier passage de la veille</option>
+        <option value="match">Match en %</option>
+        <option value="tier">Tier (A, B, C)</option>
+        <option value="salary">Salaire (annoncé ou calculé)</option>
+        <option value="company">Société (A → Z)</option>
+        <option value="title">Intitulé du poste (A → Z)</option>
+        <option value="city">Ville (A → Z)</option>
+        <option value="status">Statut (ordre du suivi)</option>
+        <option value="applied">Date de candidature</option>
+        <option value="repost">Nombre de republications</option>
+        <option value="fav">Favoris d'abord</option>
+      </select>
+      <button class="btn" type="button" id="fDir" aria-pressed="false" title="Inverser l'ordre du tri">↓ Ordre naturel</button>
+    </span>
+    </div><button class="btn solid fdone" type="button" id="fDone">Voir les offres</button></details>
   </div>
+  <div class="citybar" id="cityBar" role="group" aria-label="Villes gardées ou sorties" hidden></div>
   <p class="legend" id="legend"></p>
   <p class="count" id="count"></p>
 
@@ -494,7 +854,7 @@ details a { color: var(--accent); }
   <div id="netView" hidden>
     <nav class="tabs" id="ntabs" aria-label="Statut des contacts"></nav>
     <div class="tools">
-      <input id="nq" type="search" placeholder="Nom, entreprise, poste" aria-label="Rechercher un contact">
+      <input id="nq" type="search" placeholder="Nom, entreprise, poste, lien LinkedIn" aria-label="Rechercher un contact" autocomplete="off">
       <select id="nPrio" aria-label="Priorité"><option value="">Toutes priorités</option><option value="A">Priorité A</option><option value="B">Priorité B</option><option value="C">Priorité C</option></select>
       <select id="nSort" aria-label="Tri"><option value="prio">Priorité d'abord</option><option value="offers">Avec offres au Radar</option><option value="recent">Contactés récemment</option><option value="name">Nom</option></select>
     </div>
@@ -557,7 +917,7 @@ details a { color: var(--accent); }
     try { var x = new URL(u); return (x.protocol === "https:" || x.protocol === "http:") ? x.href : null; } catch (e) { return null; }
   }
   /* ===== Réglages : documents config/profile (pays, langue locale, semaine…) et config/cv (faits du CV) du Radar ===== */
-  var CFG = { country: "", timezone: "", work_week: ["lun", "mar", "mer", "jeu", "ven"], currency: "", home_area: "", local_language: { name: "", level: "", resource_url: "" }, job_sites: [], weekly_target: 10, followup_pref: "", zone_scale: {}, target_roles: {}, levels_accepted: [], exclusions: [], preferred_company_types: [], modes: [] };
+  var CFG = { country: "", timezone: "", work_week: ["lun", "mar", "mer", "jeu", "ven"], currency: "", home_area: "", local_language: { name: "", level: "", resource_url: "" }, job_sites: [], fast_sites: [], weekly_target: 10, followup_pref: "", zone_scale: {}, target_roles: {}, levels_accepted: [], exclusions: [], preferred_company_types: [], modes: [] };
   var CV = { name: "", contact: "", facts: "", rules: "", language: "", max_words: 0 };
   var DAY_IDX = { dim: 0, sun: 0, lun: 1, mon: 1, mar: 2, tue: 2, mer: 3, wed: 3, jeu: 4, thu: 4, ven: 5, fri: 5, sam: 6, sat: 6 };
   var SITE_URLS = {
@@ -574,7 +934,17 @@ details a { color: var(--accent); }
   function slug(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
   function strOf(v) { return typeof v === "string" ? v : ""; }
   /* Pas de barème de salaire intégré : seules les fourchettes de l'annonce ou estimées par Claude (champ salary_text) sont affichées. */
-  var SAL = { text: function (o) { return o && o.salary_text ? String(o.salary_text) : "non indiqué"; }, mini: function () { return ""; }, cardHtml: function () { return ""; } };
+  var SAL = {
+    text: function (o) { return o && o.salary_text ? String(o.salary_text) : "non indiqué"; }, mini: function () { return ""; }, cardHtml: function () { return ""; },
+    /* Fourchette lue dans le texte de l'annonce (pour le tri par salaire) : un ou deux nombres, « k » accepté. */
+    parseAnn: function (s) {
+      var m = String(s || "").replace(/[\u00a0\u202f\s]/g, "").match(/[0-9]+(?:[.,][0-9]+)?k?/gi); if (!m) return null;
+      var v = m.map(function (x) { var k = /k$/i.test(x); x = x.replace(/k$/i, ""); x = /[.,][0-9]{3}$/.test(x) ? x.replace(/[.,]/g, "") : x.replace(",", "."); var n = parseFloat(x); return k ? n * 1000 : n; }).filter(function (n) { return isFinite(n) && n > 0; });
+      if (!v.length) return null;
+      return { lo: v[0], hi: v.length > 1 ? v[1] : v[0] };
+    },
+    fromOffer: function () { return {}; }, calc: function () { return { mid: null }; }
+  };
 
   function refreshLangLabels() {
     var n = langName(), cap = n ? n.charAt(0).toUpperCase() + n.slice(1) : "";
@@ -606,7 +976,7 @@ details a { color: var(--accent); }
     ["country", "timezone", "currency", "home_area", "followup_pref"].forEach(function (k) { if (typeof d[k] === "string") CFG[k] = d[k]; });
     if (d.local_language && typeof d.local_language === "object") CFG.local_language = { name: strOf(d.local_language.name), level: strOf(d.local_language.level), resource_url: strOf(d.local_language.resource_url) };
     if (Array.isArray(d.work_week) && d.work_week.length) CFG.work_week = d.work_week.map(String);
-    ["job_sites", "levels_accepted", "exclusions", "preferred_company_types", "modes"].forEach(function (k) { if (Array.isArray(d[k])) CFG[k] = d[k]; });
+    ["job_sites", "fast_sites", "levels_accepted", "exclusions", "preferred_company_types", "modes"].forEach(function (k) { if (Array.isArray(d[k])) CFG[k] = d[k]; });
     if (d.zone_scale && typeof d.zone_scale === "object") CFG.zone_scale = d.zone_scale;
     if (d.target_roles && typeof d.target_roles === "object") CFG.target_roles = d.target_roles;
     var wt = Number(d.weekly_target); if (isFinite(wt) && wt > 0) { CFG.weekly_target = wt; WEEK_GOAL = wt; }
@@ -649,11 +1019,12 @@ details a { color: var(--accent); }
   ];
 
   var db = null, offers = [], rawOffers = [], scans = [], deferred = false;
-  var ui = { tab: "all", q: "", co: "", tier: "", source: "", city: "", match: [], heb: false, mode: false, sort: "recent" };
+  var ui = { tab: "all", q: "", co: "", tier: "", source: "", cityIn: [], cityOut: [], match: [], heb: false, mode: false, sort: "recent", rev: false };
   var aiState = {}, sampleFn = null, dlFn = null, prepState = {}, cvState = {}, cvLang = {}, busy = {};
   var openIds = new Set();
   var reportDoc = null, laterIds = loadLater();
   var contacts = [], nOpen = new Set(), cChains = new Map();
+  var sugDocs = [], sugBusy = false;
   var nui = { tab: "todo", q: "", prio: "", sort: "prio" };
   var VIEW = (function () { try { return localStorage.getItem("radar-view") === "net" ? "net" : "offers"; } catch (e) { return "offers"; } })();
   var WEEK_GOAL = 10, DAY_PICK = 2;
@@ -692,13 +1063,110 @@ details a { color: var(--accent); }
   }
   function rebuildOffers() { offers = rawOffers.map(function (r) { return norm(r.id, r.d); }); }
 
-  function matches(o) {
+  /* Recherche : tout ce qu'affiche une tuile est cherchable. Texte sans accents ni majuscules, liens et identifiants d'annonce compris.
+     Plusieurs mots = tous doivent être présents. Un lien collé est reconnu même avec une autre forme (http/https, www, paramètres de suivi, barre finale). */
+  function fold(s) { return String(s == null ? "" : s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+  function looksLikeUrl(t) { return /^(https?:\/\/|www\.)/i.test(t) || /^[a-z0-9-]+(\.[a-z0-9-]+)*\.(co\.il|org\.il|com|il|io|net|org|ai|dev|app)(\/|$)/i.test(t); }
+  function parseUrl(s) { try { return new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(s) ? s : "https://" + s); } catch (e) { return null; } }
+  function urlKey(u) {
+    var s = String(u || "").trim(); if (!s) return "";
+    var x = parseUrl(s);
+    if (x) return (x.hostname.replace(/^www\./, "") + x.pathname).replace(/\/+$/, "").toLowerCase();
+    return s.toLowerCase().replace(/^[a-z][a-z0-9+.-]*:\/\//, "").replace(/^www\./, "").split(/[?#]/)[0].replace(/\/+$/, "");
+  }
+  function urlIds(u) {
+    /* Identifiants d'annonce, toujours préfixés par le site (« site|identifiant ») : un même numéro sur un autre site ne compte pas. */
+    var s = String(u || "").trim(), out = [], m, re = /\d{5,}/g;
+    if (!s) return out;
+    var x = parseUrl(s), host = x ? x.hostname.replace(/^www\./, "").toLowerCase() : "";
+    while ((m = re.exec(s))) out.push(host + "|" + m[0]);
+    if (x) {
+      var keys = ["jk", "vjk", "currentjobid", "jobid", "job_id", "jid", "id", "gh_jid", "positionid", "reqid", "req"];
+      x.searchParams.forEach(function (v, k) { if (keys.indexOf(k.toLowerCase()) >= 0 && v.length >= 5) out.push(host + "|" + fold(v)); });
+      var seg = x.pathname.split("/").filter(Boolean).pop();
+      if (seg && seg.length >= 8) { try { out.push(host + "|" + fold(decodeURIComponent(seg))); } catch (e) { out.push(host + "|" + fold(seg)); } }
+    }
+    return out;
+  }
+  function dateWords(d) {
+    if (!d) return "";
+    var x = new Date(d), iso = String(d).slice(0, 10);
+    if (isNaN(x)) return String(d);
+    try {
+      return iso + " " + x.toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: tz() }) + " " + x.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: tz() });
+    } catch (e) { return iso; }
+  }
+  /* Assemble le texte de recherche : champs de texte, puis liens (texte, forme normalisée et identifiants), puis les mentions des badges. */
+  function buildHay(parts, urls, ids) {
+    var h = " " + fold(parts.filter(function (p) { return p != null && p !== ""; }).join(" \n "));
+    urls.forEach(function (u) { if (u) h += " \n " + fold(u) + " " + urlKey(u); });
+    urls.forEach(function (u) { urlIds(u).forEach(function (id) { h += " id:" + id + " "; }); });
+    (ids || []).forEach(function (id) { if (id) h += " id:" + fold(id) + " "; });
+    return h;
+  }
+  function offerHay(o) {
+    var links = Array.isArray(o.links) ? o.links : [], urls = [], parts = [];
+    if (o.url) urls.push(o.url);
+    if (o.contact_url) urls.push(o.contact_url);
+    links.forEach(function (l) { if (l) { parts.push(l.source); if (l.url) urls.push(l.url); } });
+    parts.push(o.id, o.key, o.title, o.company, o.recruiter, o.location, cityName(o.location), o.source, o.origin, o.channel,
+      o.contact_name, o.fit_note, o.notes, o.description, o.score_detail, o.salary_text, o.salary_basis,
+      o.co_size, o.co_sector, o.co_glassdoor, o.co_note,
+      statusLabel(o.status), MODES[o.mode] || MODES.unknown, HEBREW[o.hebrew] || "", o.tier ? "tier " + o.tier : "");
+    [o.posted_at, o.first_seen, o.last_seen, o.applied_at, o.contact_date].concat(Array.isArray(o.repost_dates) ? o.repost_dates : []).forEach(function (d) { parts.push(dateWords(d)); });
+    var rp = Number(o.repost_count) || 0;
+    if (rp > 0) parts.push("republiee republiees x" + rp);
+    if (o.recruiter) parts.push("via " + o.recruiter + " cabinet");
+    var srcSet = {}; if (o.source) srcSet[o.source] = 1; links.forEach(function (l) { if (l && l.source) srcSet[l.source] = 1; });
+    if (Object.keys(srcSet).length > 1) parts.push("vue sur " + Object.keys(srcSet).length + " sites");
+    if (o.fav) parts.push("favori favoris");
+    try { var mi = matchInfo(o); if (mi && mi.pct != null) parts.push("match " + mi.pct + " %"); } catch (e) {}
+    try { var cm = commuteMin(o); if (cm != null) parts.push("trajet " + cm + " min"); } catch (e) {}
+    try { var sm = SAL.mini(o); if (sm) parts.push(String(sm).replace(/<[^>]*>/g, " ")); } catch (e) {}
+    return buildHay(parts, urls, []);
+  }
+  function contactHay(c) {
+    var parts = [], urls = [];
+    if (c.linkedin_url) urls.push(c.linkedin_url);
+    parts.push(c.id, c.name, c.company, c.title, c.location, c.intro_by, c.open_role, c.notes, c.message, c.hook, c.angle, c.category,
+      c.relance_note, cLabel(c.status), c.priority ? "priorite " + c.priority : "", dateWords(c.contact_date), dateWords(c.relance_date));
+    if (Number(c.relance_count)) parts.push("relance x" + c.relance_count);
+    try { activeOffersAt(c.company).forEach(function (o) { parts.push(o.title); }); } catch (e) {}
+    return buildHay(parts, urls, []);
+  }
+  function tokenHit(hay, t) {
+    if (hay.indexOf(t) >= 0) return true;
+    if (looksLikeUrl(t)) {
+      var k = urlKey(t); if (k && hay.indexOf(k) >= 0) return true;
+      var ids = urlIds(t); for (var i = 0; i < ids.length; i++) if (hay.indexOf(" id:" + ids[i] + " ") >= 0) return true;
+    }
+    return false;
+  }
+  function hayMatch(hay, q) {
+    var ts = fold(q).split(/\s+/).map(function (t) { return t.replace(/^[("'<\[«“]+|[)"'>\],;»”]+$/g, ""); }).filter(Boolean);
+    for (var i = 0; i < ts.length; i++) if (!tokenHit(hay, ts[i])) return false;
+    return true;
+  }
+  function otherFiltersOn() { return !!(ui.tier || ui.cityIn.length || ui.cityOut.length || ui.match.length || ui.source || ui.heb || ui.mode || ui.trip || ui.help || ui.co); }
+  function resetFilters() {
+    ui.tier = ""; ui.cityIn = []; ui.cityOut = []; ui.match = []; ui.source = ""; ui.heb = false; ui.mode = false; ui.trip = false; ui.help = ""; ui.co = "";
+    $("#fTier").value = ""; $("#fCity").value = ""; $("#fSource").value = ""; $("#fHelp").value = ""; $("#fCo").value = "";
+    $("#fHeb").checked = false; $("#fMode").checked = false; $("#fTrip").checked = false;
+    document.querySelectorAll("#fMatch input").forEach(function (i) { i.checked = false; });
+    renderCityBar();
+  }
+
+  function matches(o, skipCity) {
     var tab = TABS.filter(function (t) { return t.id === ui.tab; })[0] || TABS[0];
-    if (!tab.test(o)) return false;
+    if (!ui.q && !tab.test(o)) return false;
     if (ui.tier && o.tier !== ui.tier) return false;
     if (ui.heb && o.hebrew !== "non_requis") return false;
     if (ui.mode && o.mode !== "hybrid" && o.mode !== "remote") return false;
-    if (ui.city && cityName(o.location).toLowerCase() !== ui.city) return false;
+    if (!skipCity && (ui.cityIn.length || ui.cityOut.length)) {
+      var ck = cityKeyOf(o.location);
+      if (ui.cityIn.length && ui.cityIn.indexOf(ck) < 0) return false;
+      if (ui.cityOut.indexOf(ck) >= 0) return false;
+    }
     if (ui.match.length) {
       var pc = matchInfo(o).pct;
       if (pc == null) return false;
@@ -709,24 +1177,59 @@ details a { color: var(--accent); }
       var srcs = [o.source].concat((o.links || []).map(function (l) { return l && l.source; }));
       if (srcs.indexOf(ui.source) < 0) return false;
     }
-    if (ui.co && (String(o.company || "") + " " + String(o.recruiter || "")).toLowerCase().indexOf(ui.co.toLowerCase()) < 0) return false;
-    if (ui.q) {
-      var hay = [o.company, o.recruiter, o.title, o.location, o.fit_note, o.notes].join(" ").toLowerCase();
-      if (hay.indexOf(ui.q.toLowerCase()) < 0) return false;
-    }
+    if (ui.co && fold(String(o.company || "") + " " + String(o.recruiter || "")).indexOf(fold(ui.co)) < 0) return false;
+    if (ui.q && !hayMatch(offerHay(o), ui.q)) return false;
     return true;
   }
   function cmpDesc(a, b) { return (b || "") > (a || "") ? 1 : (b || "") < (a || "") ? -1 : 0; }
+  /* Tri : chaque critère donne une valeur (nombre ou texte, null si absente) et un sens naturel.
+     Les offres sans valeur restent toujours en bas, quel que soit le sens choisi. */
+  function salMid(o) {
+    var p = null;
+    if (o.salary_text && !o.salary_est) { try { p = SAL.parseAnn(o.salary_text); } catch (e) {} }
+    if (p) return (p.lo + p.hi) / 2;
+    try { var f = SAL.fromOffer(o); if (f.fam) return SAL.calc(f).mid; } catch (e) {}
+    return null;
+  }
+  function statusRank(k) { for (var i = 0; i < STATUSES.length; i++) if (STATUSES[i][0] === k) return i; return 999; }
+  function sKeyStr(v) { v = fold(v).replace(/^[^a-z0-9֐-׿]+/, ""); return v || null; }
+  function sKeyDate(v) { return v ? String(v) : null; }
+  var SORTS = {
+    recent:  { v: function (o) { return sKeyDate(o.first_seen); }, dir: -1, lab: ["Récentes d'abord", "Anciennes d'abord"] },
+    posted:  { v: function (o) { return sKeyDate(o.posted_at); }, dir: -1, lab: ["Récentes d'abord", "Anciennes d'abord"] },
+    seen:    { v: function (o) { return sKeyDate(o.last_seen); }, dir: -1, lab: ["Récentes d'abord", "Anciennes d'abord"] },
+    applied: { v: function (o) { return sKeyDate(o.applied_at); }, dir: -1, lab: ["Récentes d'abord", "Anciennes d'abord"] },
+    match:   { v: function (o) { return matchInfo(o).pct; }, dir: -1, lab: ["Meilleur match d'abord", "Plus faible d'abord"] },
+    tier:    { v: function (o) { return o.tier ? String(o.tier) : null; }, dir: 1, lab: ["A → C", "C → A"] },
+    salary:  { v: salMid, dir: -1, lab: ["Plus élevé d'abord", "Plus bas d'abord"] },
+    company: { v: function (o) { return sKeyStr(o.company); }, dir: 1, lab: ["A → Z", "Z → A"] },
+    title:   { v: function (o) { return sKeyStr(o.title); }, dir: 1, lab: ["A → Z", "Z → A"] },
+    city:    { v: function (o) { return sKeyStr(cityName(o.location)); }, dir: 1, lab: ["A → Z", "Z → A"] },
+    status:  { v: function (o) { return statusRank(o.status); }, dir: 1, lab: ["Ordre du suivi", "Ordre inverse"] },
+    repost:  { v: function (o) { return Number(o.repost_count) || 0; }, dir: -1, lab: ["Plus republiées d'abord", "Moins republiées d'abord"] },
+    fav:     { v: function (o) { return o.fav ? 1 : 0; }, dir: -1, lab: ["Favoris d'abord", "Favoris à la fin"] }
+  };
+  function cmpVal(x, y) { return x < y ? -1 : x > y ? 1 : 0; }
   function sorter(a, b) {
-    if (ui.sort === "tier") {
-      if (a.tier !== b.tier) return a.tier < b.tier ? -1 : 1;
-    } else if (ui.sort === "repost") {
-      var d = (Number(b.repost_count) || 0) - (Number(a.repost_count) || 0);
-      if (d) return d;
-    } else if (ui.sort === "seen") {
-      return cmpDesc(a.last_seen, b.last_seen);
+    var s = SORTS[ui.sort] || SORTS.recent;
+    var ja = jfHot(a), jb = jfHot(b);
+    if (ja && !jb) return -1;
+    if (!ja && jb) return 1;
+    if (ja && jb) return (ja.left - jb.left) || ((matchInfo(b).pct || 0) - (matchInfo(a).pct || 0));
+    var va = s.v(a), vb = s.v(b);
+    if (va == null && vb != null) return 1;
+    if (vb == null && va != null) return -1;
+    if (va != null && vb != null) {
+      var c = cmpVal(va, vb) * s.dir * (ui.rev ? -1 : 1);
+      if (c) return c;
     }
-    return cmpDesc(a.first_seen, b.first_seen);
+    if (ui.sort === "tier") { var m = (matchInfo(b).pct || 0) - (matchInfo(a).pct || 0); if (m) return m; }
+    return cmpDesc(a.first_seen, b.first_seen) || cmpVal(String(a.id), String(b.id));
+  }
+  function syncSortUi() {
+    var s = SORTS[ui.sort] || SORTS.recent, b = $("#fDir"); if (!b) return;
+    b.textContent = (ui.rev ? "↑ " : "↓ ") + s.lab[ui.rev ? 1 : 0];
+    b.setAttribute("aria-pressed", ui.rev ? "true" : "false");
   }
 
   function renderStats() {
@@ -753,19 +1256,44 @@ details a { color: var(--accent); }
       return '<button class="tab" type="button" data-tab="' + t.id + '" aria-pressed="' + (ui.tab === t.id) + '">' + t.label + "<i>" + n + "</i></button>";
     }).join("");
   }
+  /* Villes cliquables : un clic = je garde (✓), un 2e clic = je sors (✕), un 3e = neutre. */
+  var cityNames = {};
+  function cityKeyOf(loc) { return cityName(loc).toLowerCase(); }
+  function cityState(k) { return ui.cityIn.indexOf(k) >= 0 ? "in" : ui.cityOut.indexOf(k) >= 0 ? "out" : ""; }
+  function cityCycle(k) {
+    var st = cityState(k);
+    ui.cityIn = ui.cityIn.filter(function (x) { return x !== k; });
+    ui.cityOut = ui.cityOut.filter(function (x) { return x !== k; });
+    if (st === "") ui.cityIn.push(k);
+    else if (st === "in") ui.cityOut.push(k);
+  }
+  function cityLabel(k) { return cityNames[k] || k; }
+  function renderCityBar() {
+    var bar = $("#cityBar"); if (!bar) return;
+    if (!ui.cityIn.length && !ui.cityOut.length) { bar.hidden = true; bar.innerHTML = ""; return; }
+    var chip = function (k) { return cityChipHtml(k, cityLabel(k), cityKey(cityLabel(k))); };
+    bar.innerHTML = '<span class="cb-l">Villes :</span>' +
+      (ui.cityIn.length ? '<span class="cb-g"><b>Je garde</b>' + ui.cityIn.map(chip).join(" ") + "</span>" : "") +
+      (ui.cityOut.length ? '<span class="cb-g"><b>Je sors</b>' + ui.cityOut.map(chip).join(" ") + "</span>" : "") +
+      '<button class="btn" type="button" data-cityreset="1">Toutes les villes</button>';
+    bar.hidden = false;
+  }
   function renderCities() {
-    var sel = $("#fCity"), cur = ui.city, set = {};
+    var sel = $("#fCity"), set = {};
     offers.forEach(function (o) {
       var n = cityName(o.location);
       if (!n) return;
       var k = n.toLowerCase();
       if (!set[k]) set[k] = { name: n, n: 0 };
       set[k].n++;
+      cityNames[k] = n;
     });
+    var cur = (ui.cityIn.length === 1 && !ui.cityOut.length) ? ui.cityIn[0] : "";
     var keys = Object.keys(set).sort(function (a, b) { return set[b].n - set[a].n || a.localeCompare(b); });
     sel.innerHTML = '<option value="">Toutes les villes</option>' + keys.map(function (k) {
       return '<option value="' + esc(k) + '"' + (k === cur ? " selected" : "") + ">" + esc(set[k].name) + " (" + set[k].n + ")</option>";
     }).join("");
+    renderCityBar();
   }
   function renderCompanies() {
     var dl = $("#coList"), set = {};
@@ -817,27 +1345,58 @@ details a { color: var(--accent); }
     var t = TIER_PCT[o.tier];
     return t ? { pct: t, est: true } : { pct: null, est: true };
   }
+  /* Sites rapides (fast_sites du profil) : les annonces partent vite. Match de 70 % et plus, encore a traiter : alerte sur la tuile, decompte de 5 jours, en tete de liste et de la routine. */
+  function jfIsFast(o) {
+    var names = (CFG.fast_sites || []).map(function (s) { return String(s && s.name ? s.name : s || "").toLowerCase().replace(/[^a-z0-9]+/g, ""); }).filter(function (s) { return s.length > 2; });
+    if (!names.length) return false;
+    var hay = [o.source, o.url].concat(Array.isArray(o.links) ? o.links.map(function (l) { return l ? String(l.source || "") + " " + String(l.url || "") : ""; }) : []).join(" ").toLowerCase().replace(/[^a-z0-9]+/g, "");
+    return names.some(function (n) { return hay.indexOf(n) >= 0; });
+  }
+  function jfHot(o) {
+    if (!o || (o.status !== "nouveau" && o.status !== "a_postuler")) return null;
+    if (!jfIsFast(o)) return null;
+    var p = matchInfo(o).pct; if (p == null || p < 70) return null;
+    var pub = /^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(String(o.posted_at || ""));
+    var n = daysSince(pub ? o.posted_at : o.first_seen); if (n == null) return null;
+    var left = 5 - n; if (left < 0) return null;
+    return { left: left, pct: p, pub: pub };
+  }
+  function jfBadge(o) {
+    var h = jfHot(o); if (!h) return "";
+    var txt = h.left === 0 ? "dernier jour" : h.left + (h.left > 1 ? " jours restants" : " jour restant");
+    return '<span class="badge-jf" title="Annonce d\'un site rapide a ' + h.pct + ' % de match : ces annonces partent vite. Decompte de 5 jours depuis ' + (h.pub ? 'la publication' : 'la premiere vue dans le Radar') + '.">⚡ Urgent · ' + txt + "</span>";
+  }
   function matchClass(pct) {
     if (pct == null) return "m-none";
     if (pct >= 85) return "m-hi";
     if (pct >= 70) return "m-mid";
     return "m-lo";
   }
+  function cityChipHtml(k, name, h) {
+    var st = cityState(k);
+    var tip = st === "in" ? "Je garde seulement cette ville. Clique pour la sortir de la liste." : st === "out" ? "Ville sortie de la liste. Clique pour annuler." : "Clique pour ne garder que cette ville (clique encore pour la sortir).";
+    return '<button type="button" class="city' + (st ? " is-" + st : "") + '" style="--h:' + h + '" data-city="' + esc(k) + '" title="' + esc(tip) + '" aria-label="' + esc("Ville " + name + " : " + (st === "in" ? "gardée" : st === "out" ? "sortie" : "neutre") + ". " + tip) + '">' + (st === "in" ? "✓ " : st === "out" ? "✕ " : "") + esc(name) + "</button>";
+  }
   function cityChip(loc) {
     var name = cityName(loc), h = cityKey(loc);
     if (!name || h == null) return "";
-    return '<span class="city" style="--h:' + h + '">' + esc(name) + "</span>";
+    return cityChipHtml(name.toLowerCase(), name, h);
   }
   function renderLegend(shown) {
     var el = $("#legend");
     if (!el) return;
+    /* `shown` = offres qui passent tous les filtres SAUF la ville : la légende sert de palette de villes (gardées, sorties ou neutres). */
     var seen = {}, order = [];
     (shown || []).forEach(function (o) {
-      var n = cityName(o.location);
-      if (n && !seen[n.toLowerCase()]) { seen[n.toLowerCase()] = 1; order.push(o.location); }
+      var n = cityName(o.location), k = n.toLowerCase();
+      if (!n) return;
+      if (!seen[k]) { seen[k] = { loc: o.location, n: 0 }; order.push(k); }
+      seen[k].n++;
     });
+    order.sort(function (a, b) { return seen[b].n - seen[a].n || a.localeCompare(b); });
+    order = order.map(function (k) { return seen[k].loc; });
     var m = '<span class="sw"><i style="--c:var(--m-hi)"></i>≥ 85 %</span><span class="sw"><i style="--c:var(--m-mid)"></i>70–84 %</span><span class="sw"><i style="--c:var(--m-lo)"></i>&lt; 70 %</span>';
-    el.innerHTML = '<span>Match :</span>' + m + '<span class="sep"></span><span><b>Tier</b> (pastille à gauche de chaque offre) : <b>A</b> = fit ≥ 85 % (rôle, niveau, langue, zone et mode proches de ton profil) · <b>B</b> = 70–84 % · <b>C</b> = &lt; 70 %</span>' + (order.length ? '<span class="sep"></span><span>Villes :</span>' + order.slice(0, 12).map(cityChip).join(" ") : "") + '<span class="sep"></span><span>Trajet : lien Itinéraire (Google Maps) depuis ton domicile</span>';
+    el.innerHTML = '<span>Match :</span>' + m + '<span class="sep"></span><span><b>Tier</b> (pastille à gauche de chaque offre) : <b>A</b> = fit ≥ 85 % (rôle, niveau, langue, zone et mode proches de ton profil) · <b>B</b> = 70–84 % · <b>C</b> = &lt; 70 %</span>' + (order.length ? '<span class="sep"></span><span>Villes (clique : <b>✓ je garde</b>, encore : <b>✕ je sors</b>, encore : annuler) :</span>' + order.slice(0, 16).map(cityChip).join(" ") : "") + '<span class="sep"></span><span>Trajet : lien Itinéraire (Google Maps) depuis ton domicile</span>';
   }
 
   function fmtMin(m) {
@@ -1140,11 +1699,39 @@ details a { color: var(--accent); }
 
   /* Routage automatique des modèles : chaque tâche IA choisit seule son niveau (quick = Haiku, default = Sonnet, complex = Opus). */
   var ROUTES = { company: "quick", salary: "quick", rel: "default", brief: "default", note: "default", plan: "default", heb: "default", cv: "default", prep: "complex", nego: "complex", quizplan: "quick", quiz: "default" };
+  /* Mode de modèle (choix de l'utilisateur, mémorisé sur cet appareil) :
+     eco = jamais plus haut que Sonnet ; auto = table ROUTES ; deep = un cran au-dessus (Haiku→Sonnet, Sonnet→Opus). */
+  var MODE = (function () { try { var m = localStorage.getItem("radar-model-mode"); return m === "eco" || m === "deep" ? m : "auto"; } catch (e) { return "auto"; } })();
+  var MODE_HINTS = {
+    eco: "Éco : Haiku pour le tri, Sonnet pour tout le reste, jamais Opus.",
+    auto: "Auto : Opus pour les meilleures offres (match 85+ pour l'entretien et la négociation, 90+ pour le reste) ou dès qu'un entretien est en vue ; Sonnet sinon.",
+    deep: "Approfondi : un cran au-dessus partout (Sonnet pour le tri, Opus pour le reste)."
+  };
+  function modeTier(t) {
+    if (MODE === "eco") return t === "complex" ? "default" : t;
+    if (MODE === "deep") return t === "quick" ? "default" : "complex";
+    return t;
+  }
+  /* Mode Auto : l'effort suit le score de match de l'offre, pas la taille de l'annonce.
+     Opus seulement si le match atteint le seuil de la tâche (85 pour la préparation d'entretien et la négociation, 90 pour le reste), sinon Sonnet.
+     Entretien ou offre en vue : Opus pour CV, plan, préparation et négociation, quel que soit le score. Le tri rapide (Haiku) ne bouge jamais.
+     Sans match_pct, on prend la valeur basse du tier (A 85, B 75, C 60). */
+  var OPUS_FROM = { prep: 85, nego: 85 }, OPUS_FROM_DEFAULT = 90, TIER_MATCH = { A: 85, B: 75, C: 60 };
+  function matchOf(o) {
+    if (!o) return null;
+    var m = Number(o.match_pct);
+    if (isFinite(m) && m > 0) return m;
+    return TIER_MATCH[o.tier] || null;
+  }
   function routeTier(task, o) {
     var t = ROUTES[task] || "default";
-    var longAd = !!(o && o.description && String(o.description).length > 3000);
-    if (o && o.tier === "A" && longAd && (task === "cv" || task === "plan")) t = "complex";
-    return t;
+    if (MODE === "auto" && t !== "quick") {
+      var m = matchOf(o), live = !!(o && (o.status === "entretien" || o.status === "offre"));
+      var need = OPUS_FROM[task] || OPUS_FROM_DEFAULT;
+      var stake = live && (task === "cv" || task === "plan" || task === "prep" || task === "nego");
+      t = (stake || (m != null && m >= need)) ? "complex" : "default";
+    }
+    return modeTier(t);
   }
   function runAI(kind, id) {
     var o = findOffer(id); if (!o || !sampleFn) return;
@@ -1157,8 +1744,7 @@ details a { color: var(--accent); }
       signal: ctl.signal, cache: false, modelTier: routeTier(kind, o),
       onText: function (u) {
         st.text = u.text;
-        var boxes = document.querySelectorAll('[data-aiout="' + key.replace(/"/g, "") + '"]');
-        if (boxes.length) boxes.forEach(function (b) { b.innerHTML = fmtPrep(u.text); }); else { renderRelBar(); renderList(); }
+        document.querySelectorAll('[data-aiout="' + key.replace(/"/g, "") + '"]').forEach(function (b) { streamBox(b, function () { return fmtPrep(st.text); }); });
       }
     }).then(function (r) {
       st.running = false;
@@ -1180,7 +1766,7 @@ details a { color: var(--accent); }
       if (text && !running) h += ' <button class="btn" type="button" data-act="ai-copy" data-kind="' + kind + '" data-oid="' + id + '">Copier</button>';
     } else h += '<span style="color:var(--muted)">Disponible quand Claude est accessible depuis la page.</span>';
     h += "</div>";
-    if (text) h += '<div class="prep" data-aiout="' + key + '">' + fmtPrep(text) + "</div>";
+    if (text || running) h += '<div class="prep" data-aiout="' + key + '">' + fmtPrep(text) + "</div>";
     if (st && st.error) h += '<p style="color:var(--crit);margin-top:6px">' + esc(st.error) + "</p>";
     return h;
   }
@@ -1221,33 +1807,76 @@ details a { color: var(--accent); }
       if (pb !== pa) return pb - pa;
       return cmpDesc(a.first_seen, b.first_seen);
     });
+    pool.sort(function (a, b) { var ha = jfHot(a), hb = jfHot(b); if (ha && !hb) return -1; if (!ha && hb) return 1; if (ha && hb) return ha.left - hb.left; return 0; });
     return { picks: pool.slice(0, DAY_PICK), left: pool.length };
   }
+  var rtCollapsed = false;
+  try { rtCollapsed = localStorage.getItem("radar_rt_collapsed") === "1"; } catch (e) {}
   function renderRoutine() {
     var box = $("#routine"); if (!box) return;
     if (!offers.length) { box.hidden = true; return; }
     var r = routinePicks(), done = appliedThisWeek(), w = Math.min(100, Math.round(100 * done / WEEK_GOAL));
     box.hidden = false;
-    var head = '<h2>Routine du jour<span class="goal">Candidatures cette semaine : <b>' + done + " / " + WEEK_GOAL + "</b></span></h2>" +
-      '<div class="bar" role="img" aria-label="' + done + " candidatures sur " + WEEK_GOAL + '"><i style="width:' + w + '%"></i></div>' +
-      '<p class="sub">Les ' + DAY_PICK + " meilleures offres A/B pas encore postulées. Pour chacune : le plan, puis le CV depuis la fiche, puis « J'ai postulé ». " + r.left + " offre" + (r.left > 1 ? "s" : "") + " en attente.</p>";
+    var hots = offers.filter(function (o) { return jfHot(o); }).sort(function (a, b) { return jfHot(a).left - jfHot(b).left; });
     var du = dueHtml();
-    if (!r.picks.length) { box.innerHTML = head + du + (du ? "" : '<p class="hint">Rien à traiter aujourd\'hui : toutes les offres A/B sont postulées ou reportées.</p>') + netRoutineHtml(); return; }
-    box.innerHTML = head + du + '<p class="rtsub">Offres · 2 candidatures</p>' + r.picks.map(function (o) {
-      var id = esc(o.id), key = "plan:" + o.id, st = aiState[key], running = st && st.running, has = !!aiText("plan", o.id), mi = matchInfo(o);
-      return '<div class="rtrow"><div class="who"><b>' + esc(o.company || "") + "</b> · " + esc(o.title || "") +
-        (mi.pct != null ? ' <span class="pct">' + (mi.est ? "~" : "") + mi.pct + " %</span>" : "") +
-        '<div class="why">' + esc([cityName(o.location) || o.location, MODES[o.mode], o.recruiter ? "via " + o.recruiter : ""].filter(Boolean).join(" · ")) + "</div>" + atsBadge(o) + "</div>" +
-        '<div class="aibar">' + (sampleFn ? '<button class="btn solid" type="button" data-act="ai-run" data-kind="plan" data-oid="' + id + '"' + (running ? " disabled" : "") + ">" + (running ? "Claude rédige…" : (has ? "Régénérer le plan" : "Plan de candidature")) + "</button>" : "") +
-        (has && !running ? ' <button class="btn" type="button" data-act="ai-copy" data-kind="plan" data-oid="' + id + '">Copier</button>' : "") +
-        (siteLinks(o, "btn") ? " " + siteLinks(o, "btn") : "") +
-        ' <button class="btn" type="button" data-act="see" data-oid="' + id + '">Voir l\'offre et le CV</button>' +
-        ' <button class="btn" type="button" data-act="applied" data-oid="' + id + '">J\'ai postulé</button>' +
-        ' <button class="btn" type="button" data-act="later" data-oid="' + id + '">Demain</button>' +
-        ' <button class="btn" type="button" data-act="closed" data-oid="' + id + '">Offre fermée</button></div>' +
-        (has ? '<div class="prep" data-aiout="' + key + '">' + fmtPrep(aiText("plan", o.id)) + "</div>" : "") +
-        (st && st.error ? '<p style="color:var(--crit)">' + esc(st.error) + "</p>" : "") + "</div>";
-    }).join("") + netRoutineHtml();
+    var h = "";
+
+    /* 1. À traiter en premier */
+    if (hots.length || du) {
+      h += '<section class="td-sec td-first" aria-label="À traiter en premier"><div class="td-h"><h2>À traiter en premier</h2>' + (hots.length ? '<span class="td-n">' + hots.length + "</span>" : "") + "</div>";
+      if (hots.length) {
+        h += '<div class="td-jf"><div class="td-jfh">' + ICO_BOLT + "<strong>Sites rapides : ça part vite</strong></div><div class=\"td-jfs\">Match de 70 % et plus, décompte de 5 jours</div>" +
+          hots.map(function (o) {
+            var hh = jfHot(o), mi = matchInfo(o);
+            return '<button type="button" class="td-jfrow" data-act="see" data-oid="' + esc(o.id) + '"><span class="pctpill">' + mi.pct + ' %</span>' +
+              '<span class="td-t"><b>' + esc(o.title || "") + "</b><small>" + esc([o.company, cityName(o.location) || o.location, MODES[o.mode]].filter(Boolean).join(" · ")) + "</small></span>" +
+              '<span class="td-left"><b>' + (hh.left === 0 ? "Dernier jour" : hh.left + (hh.left > 1 ? " jours" : " jour")) + "</b><small>" + (hh.left === 0 ? "" : (hh.left > 1 ? "restants" : "restant")) + "</small></span></button>";
+          }).join("") + "</div>";
+      }
+      h += du + "</section>";
+    }
+
+    /* 2. Ta semaine */
+    h += '<section class="td-week" aria-label="Ta semaine"><div class="td-wh"><h2>Ta semaine</h2><span>Objectif : ' + DAY_PICK + " par jour ouvré</span></div>" +
+      '<div class="td-big"><b>' + done + "</b><span>candidature" + (done > 1 ? "s" : "") + " sur " + WEEK_GOAL + "</span></div>" +
+      '<div class="bar" role="img" aria-label="' + done + " candidatures sur " + WEEK_GOAL + '"><i style="width:' + w + '%"></i></div></section>';
+
+    /* 3. Routine du jour */
+    h += '<section class="td-sec" aria-label="Routine du jour"><div class="td-h"><h2>Routine du jour</h2><span class="td-s">' + r.picks.length + " offre" + (r.picks.length > 1 ? "s" : "") + "</span></div>";
+    if (!r.picks.length) h += '<p class="hint">Rien à traiter aujourd\'hui : toutes les offres A/B sont postulées ou reportées.</p>';
+    h += r.picks.map(function (o) {
+      var id = esc(o.id), mi = matchInfo(o), cs = cvState[o.id];
+      var d = [!!aiText("plan", o.id), !!((cs && cs.text) || o.cv_text), ["postule", "relance", "entretien", "offre"].indexOf(o.status) >= 0];
+      var names = ["1 · Plan", "2 · CV", "3 · Postuler"];
+      return '<article class="td-card"><div class="td-ct"><span class="pctpill' + (mi.pct != null && mi.pct >= 70 ? "" : " lo") + '">' + (mi.pct != null ? (mi.est ? "~" : "") + mi.pct + " %" : "—") + "</span>" +
+        '<div class="td-t"><h3>' + esc(o.title || "") + '</h3><div class="co">' + esc([o.company, cityName(o.location) || o.location, MODES[o.mode], o.recruiter ? "via " + o.recruiter : ""].filter(Boolean).join(" · ")) + "</div></div></div>" +
+        (jfHot(o) ? '<div class="jfban">' + ICO_BOLT + "Urgent · " + jfText(jfHot(o)) + "</div>" : "") +
+        '<ol class="td-steps">' + names.map(function (nm, i) { return '<li class="' + (d[i] ? "done" : "") + '">' + nm + (d[i] ? " ✓" : "") + "</li>"; }).join("") + "</ol>" +
+        atsBadge(o) +
+        '<div class="td-btns"><button class="btn solid" type="button" data-act="see" data-oid="' + id + '">Préparer la candidature</button>' +
+        '<button class="btn" type="button" data-act="later" data-oid="' + id + '">Demain</button></div>' +
+        '<div class="td-tert"><button class="lnk" type="button" data-act="applied" data-oid="' + id + '">J\'ai déjà postulé</button><button class="lnk" type="button" data-act="closed" data-oid="' + id + '">Offre fermée</button></div></article>';
+    }).join("") + "</section>";
+
+    /* 4. Mes candidatures */
+    var apps = offers.filter(function (o) { return ["entretien", "postule", "relance"].indexOf(o.status) >= 0; }).sort(function (a, b) {
+      var ra = a.status === "entretien" ? 0 : 1, rb = b.status === "entretien" ? 0 : 1;
+      if (ra !== rb) return ra - rb;
+      return String(b.applied_at || "").localeCompare(String(a.applied_at || ""));
+    }).slice(0, 5);
+    if (apps.length) {
+      var STG = { screen_rh: "entretien RH", technique: "entretien technique", exercice: "exercice", final: "entretien final" };
+      h += '<section class="td-sec" aria-label="Mes candidatures"><div class="td-h"><h2>Mes candidatures</h2></div><div class="td-aps">' + apps.map(function (o) {
+        var info = o.status === "entretien" ? (STG[o.stage] || "entretien") : (o.applied_at ? "Postulé le " + fmtDate(o.applied_at) : "Postulé");
+        return '<button type="button" class="td-ap" data-act="see" data-oid="' + esc(o.id) + '"><span class="td-t"><b>' + esc(o.company || "") + "</b><small>" + esc((o.title || "") + " · " + info) + "</small></span>" +
+          '<span class="chip' + (o.status === "entretien" ? " ok" : " chip-new") + '">' + esc(statusLabel(o.status)) + "</span></button>";
+      }).join("") + "</div></section>";
+    }
+
+    /* 5. Réseau */
+    var nr = netRoutineHtml();
+    if (nr) h += '<section class="td-net" aria-label="Réseau">' + nr + "</section>";
+    box.innerHTML = h;
   }
   var CSTAT = [["a_contacter", "À contacter"], ["en_attente", "Infos à compléter"], ["contacte", "Contacté"], ["a_relancer", "À relancer"], ["repondu", "A répondu"], ["echange", "Échange / RDV"], ["inactif", "Pas de suite"]];
   var NTABS = [
@@ -1363,7 +1992,7 @@ details a { color: var(--accent); }
       (at.length ? '<div class="wide"><h4>Offres au Radar chez ' + esc(c.company) + '</h4><ul class="co-list">' + at.slice(0, 8).map(function (o) {
         return '<li><a href="#" data-cact="offer" data-oid="' + esc(o.id) + '">' + esc(o.title) + "</a> · " + esc(statusLabel(o.status)) + (o.tier ? " · " + esc(o.tier) : "") + "</li>"; }).join("") + "</ul></div>" : "") +
       '<div class="wide"><h4>Notes</h4><textarea data-cfield="notes" data-cid="' + id + '" placeholder="Échange, réponse, prochaine étape">' + esc(c.notes || "") + "</textarea></div></div>";
-    return '<article class="crow' + (due ? " due" : "") + '" data-cidrow="' + id + '">' +
+    return '<div class="cell"><article class="crow' + (due ? " due" : "") + '" data-cidrow="' + id + '">' +
       '<div class="tier t' + esc(c.priority || "C") + '" title="Priorité ' + esc(c.priority || "") + '">' + esc(c.priority || "–") + "</div>" +
       '<div class="main"><h3>' + esc(c.name) + '<span class="badges">' + badges + "</span></h3>" +
       '<p class="meta">' + meta.join(" · ") + '</p><p class="meta">' + meta2.filter(Boolean).join(" · ") + "</p>" +
@@ -1375,7 +2004,7 @@ details a { color: var(--accent); }
       (c.status === "a_contacter" || c.status === "en_attente" ? '<button class="btn" type="button" data-cact="sent" data-cid="' + id + '">Message envoyé</button>' : "") +
       (due ? '<button class="btn" type="button" data-cact="copyrel" data-cid="' + id + '">Copier la relance</button><button class="btn" type="button" data-cact="relanced" data-cid="' + id + '">Marquer relancé</button>' : "") +
       '<button class="btn" type="button" data-ctoggle="' + id + '" aria-expanded="' + open + '">' + (open ? "Moins" : "Plus") + "</button></div>" +
-      detail + "</article>";
+      detail + "</article></div>";
   }
   function renderNet() {
     $("#vwO").textContent = offers.filter(function (o) { return ARCHIVE.indexOf(o.status) < 0; }).length;
@@ -1387,9 +2016,9 @@ details a { color: var(--accent); }
     var a = document.activeElement; if (a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT") && $("#netList").contains(a)) return;
     var tab = NTABS.filter(function (t) { return t.id === nui.tab; })[0] || NTABS[0], pr = { A: 0, B: 1, C: 2 };
     var shown = contacts.filter(function (c) {
-      if (!tab.test(c)) return false;
+      if (!nui.q && !tab.test(c)) return false;
       if (nui.prio && c.priority !== nui.prio) return false;
-      if (nui.q) { var hay = [c.name, c.company, c.title, c.location, c.intro_by, c.notes, c.open_role].join(" ").toLowerCase(); if (hay.indexOf(nui.q.toLowerCase()) < 0) return false; }
+      if (nui.q && !hayMatch(contactHay(c), nui.q)) return false;
       return true;
     });
     shown.sort(function (a, b) {
@@ -1399,9 +2028,73 @@ details a { color: var(--accent); }
       var d = (pr[a.priority] == null ? 3 : pr[a.priority]) - (pr[b.priority] == null ? 3 : pr[b.priority]); if (d) return d;
       return String(a.name).localeCompare(String(b.name));
     });
-    $("#netList").innerHTML = shown.length ? shown.map(contactRow).join("") : '<div class="empty"><strong>Aucun contact ici</strong><p>Change d\'onglet ou de filtre.</p></div>';
-    $("#ncount").textContent = shown.length + (shown.length > 1 ? " contacts affichés" : " contact affiché");
+    $("#netList").innerHTML = shown.length ? shown.map(contactRow).join("") : '<div class="empty"><strong>' + (nui.q ? "Aucun contact ne correspond" : "Aucun contact ici") + '</strong><p>' + (nui.q ? "La recherche couvre tous les onglets : nom, entreprise, poste, lien LinkedIn, notes et message." + (nui.prio ? " Une priorité est filtrée : remets « Toutes priorités »." : "") : "Change d'onglet ou de filtre.") + "</p></div>";
+    $("#ncount").textContent = shown.length + (shown.length > 1 ? " contacts affichés" : " contact affiché") + (nui.q ? " · recherche dans tous les onglets" : "");
   }
+  /* Contacts suggérés par le scan LinkedIn : collection suggested_contacts, bouton « Ajouter les N contacts » */
+  function sugPending() {
+    var out = [];
+    sugDocs.forEach(function (d) {
+      var done = d.data.done || {};
+      (Array.isArray(d.data.people) ? d.data.people : []).forEach(function (p) {
+        if (p && p.id && p.name && !done[p.id]) out.push({ docId: d.id, p: p });
+      });
+    });
+    return out;
+  }
+  function sugExists(p) {
+    var u = String(p.linkedin_url || "").toLowerCase().replace(/\/$/, "");
+    return contacts.some(function (c) { return c.id === p.id || (u && String(c.linkedin_url || "").toLowerCase().replace(/\/$/, "") === u); });
+  }
+  function sugFor(o) {
+    var k = normCo(o.company); if (!k) return [];
+    return sugPending().filter(function (x) {
+      if (sugExists(x.p)) return false;
+      if (x.p.offer_key && x.p.offer_key === o.id) return true;
+      var ck = normCo(x.p.company); return ck && (ck === k || (k.length > 3 && ck.indexOf(k) === 0) || (ck.length > 3 && k.indexOf(ck) === 0));
+    });
+  }
+  function sugHtml(o) {
+    var list = sugFor(o); if (!list.length) return "";
+    return '<div class="wide"><h4>Contacts repérés par le scan chez ' + esc(o.company) + " (" + list.length + ')</h4><ul class="sugl">' + list.map(function (x) {
+      var p = x.p, u = safeUrl(p.linkedin_url);
+      return '<li><strong>' + esc(p.name) + "</strong> · " + esc(p.title || "") + (p.priority ? " · priorité " + esc(p.priority) : "") + ' <span class="m">' + esc(p.notes || "") + '</span><span class="m">' + esc(p.message || "") + '</span>' +
+        '<div class="aibar"><button class="btn solid" type="button" data-sug="add" data-sid="' + esc(p.id) + '" data-sdoc="' + esc(x.docId) + '"' + (sugBusy ? " disabled" : "") + '>Ajouter au Réseau</button>' +
+        ' <button class="btn" type="button" data-sug="copy" data-sid="' + esc(p.id) + '" data-sdoc="' + esc(x.docId) + '">Copier la note</button>' +
+        (u ? ' <a class="btn" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">Ouvrir le profil ↗</a>' : "") +
+        ' <button class="btn" type="button" data-sug="skip" data-sid="' + esc(p.id) + '" data-sdoc="' + esc(x.docId) + '">Ignorer</button></div></li>';
+    }).join("") + '</ul><p class="hint">Rien n\'est envoyé : « Ajouter au Réseau » crée la fiche (à contacter), tu envoies la note toi-même depuis LinkedIn.</p></div>';
+  }
+  function sugFind(docId, id) {
+    var d = sugDocs.filter(function (x) { return x.id === docId; })[0]; if (!d) return null;
+    return (d.data.people || []).filter(function (p) { return p && p.id === id; })[0] || null;
+  }
+  function sugAddOne(docId, id) {
+    if (!db) { needDb(); return; }
+    var p = sugFind(docId, id); if (!p || sugBusy) return;
+    if (sugExists(p)) { sugMark(docId, [id]).catch(onWriteError); return; }
+    sugBusy = true;
+    var fields = ["name", "title", "company", "location", "linkedin_url", "priority", "angle", "hook", "message", "open_role", "category", "notes", "intro_by"];
+    var d = {}; fields.forEach(function (f) { if (p[f] != null) d[f] = p[f]; });
+    d.status = "a_contacter"; d.origin = p.origin || "scan_linkedin"; d.imported_at = todayStr();
+    db.collection("contacts").doc(p.id).set(d).then(function () { return sugMark(docId, [id]); })
+      .then(function () { toast(p.name + " ajouté au Réseau (à contacter)."); })
+      .catch(onWriteError).then(function () { sugBusy = false; sugRefresh(); });
+  }
+  function sugRefresh() {
+    renderNet();
+    if (VIEW === "offers") { var a = document.activeElement; if (!(a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT") && $("#list").contains(a))) renderList(); }
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-sug]"); if (!b) return;
+    var a = b.getAttribute("data-sug"), docId = b.getAttribute("data-sdoc"), id = b.getAttribute("data-sid");
+    if (a === "add") sugAddOne(docId, id);
+    else if (a === "copy") { var p = sugFind(docId, id); if (p) copyText(p.message || "", "Note de connexion copiée."); }
+    else if (a === "skip") {
+      if (!db) { needDb(); return; }
+      sugMark(docId, [id]).then(function () { toast("Contact ignoré."); sugRefresh(); }).catch(onWriteError);
+    }
+  });
   function handleNet(act, cid, el) {
     var c = findContact(cid);
     if (act === "offer") { var oid = el.getAttribute("data-oid"); VIEW = "offers"; saveView(); renderNet(); handleAi("see", oid, el); return; }
@@ -1443,7 +2136,7 @@ details a { color: var(--accent); }
           ' <button class="btn" type="button" data-act="see" data-oid="' + id + '">Voir l\'offre</button>' +
           ' <button class="btn" type="button" data-act="relanced" data-oid="' + id + '">Marquer relancé</button></div>' +
           '<input class="field" data-relnote="o" data-oid="' + id + '" value="' + esc(o.relance_note || "") + '" placeholder="Note libre : la valider compte comme une relance (ex. ITW sans passer par ce contact)" aria-label="Note libre sur la relance">' +
-          (has ? '<div class="prep" data-aiout="' + key + '">' + fmtPrep(aiText("rel", o.id)) + "</div>" : "") +
+          (has || running ? '<div class="prep" data-aiout="' + key + '">' + fmtPrep(aiText("rel", o.id)) + "</div>" : "") +
           (aiState[key] && aiState[key].error ? '<p style="color:var(--crit)">' + esc(aiState[key].error) + "</p>" : "") + "</div>";
       }).join("") + relContactsHtml();
   }
@@ -1455,6 +2148,13 @@ details a { color: var(--accent); }
       var o = findOffer(oid); if (!o) return true; if (!db) { needDb(); return true; }
       writeDoc(oid, { status: "relance", status_changed_at: new Date().toISOString(), relance_sent_at: todayStr(), relance_count: (Number(o.relance_count) || 0) + 1 }).catch(onWriteError);
       toast("Relance notée. Prochain rappel dans " + REL_DAYS + " jours.");
+      return true;
+    }
+    if (kind === "ignore") {
+      var oi = findOffer(oid); if (!oi) return true; if (!db) { needDb(); return true; }
+      writeDoc(oid, { status: "ignore", status_changed_at: new Date().toISOString() }).catch(onWriteError);
+      openIds["delete"](oid);
+      toast("Offre ignorée.");
       return true;
     }
     if (kind === "applied") {
@@ -1519,12 +2219,34 @@ details a { color: var(--accent); }
     }
     if (kind === "see") {
       var o2 = findOffer(oid); if (!o2) return true;
-      ui.tab = "all"; ui.co = o2.company || ""; $("#fCo").value = ui.co; openIds.add(oid);
+      ui.tab = "all"; ui.co = o2.company || ""; $("#fCo").value = ui.co; openIds.clear(); openIds.add(oid);
       renderTabs(); renderList();
       var card = document.querySelector('[data-id="' + oid.replace(/"/g, "") + '"]'); if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
       return true;
     }
     return false;
+  }
+
+  /* Affichage progressif sans saut : une seule mise à jour par image, hauteur de la boîte jamais réduite pendant la rédaction,
+     position de la page et défilement interne de la boîte conservés. Si la boîte n'est pas à l'écran, on ne reconstruit rien. */
+  function streamBox(box, getHtml) {
+    if (!box) return;
+    box._sg = getHtml;
+    if (box._sq) return;
+    box._sq = true;
+    var run = function () {
+      box._sq = false;
+      if (!box.isConnected) return;
+      var html = box._sg();
+      keepScroll(function () {
+        var top = box.scrollTop, h = box.offsetHeight;
+        if (h > (box._mh || 0)) box._mh = h;
+        box.style.minHeight = (box._mh || 0) + "px";
+        box.innerHTML = html;
+        box.scrollTop = top;
+      });
+    };
+    (window.requestAnimationFrame || function (f) { return setTimeout(f, 16); })(run);
   }
 
   function fmtPrep(text) {
@@ -1641,14 +2363,14 @@ details a { color: var(--accent); }
         var u = safeUrl(x.url);
         return "<li>" + (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(x.title || "Sans intitulé") + "</a>" : esc(x.title || "Sans intitulé")) + (x.location ? " · " + esc(x.location) : "") + " · " + esc(statusLabel(x.status)) + "</li>";
       }).join("") + "</ul>" : '<p style="margin-top:6px;color:var(--muted)">Aucune autre offre suivie chez cet employeur.</p>') +
-      (sampleFn ? '<p style="margin-top:6px"><button class="btn" type="button" data-act="company" data-oid="' + id + '"' + (busy["c" + o.id] ? " disabled" : "") + ">" + (busy["c" + o.id] ? "Recherche…" : (facts.length ? "Actualiser avec Claude" : "Compléter avec Claude")) + "</button> <span style=\"font-size:.78rem;color:var(--muted)\">d'après les connaissances de Claude, sans accès au web</span></p>" : "") + "</div>" + ctsHtml;
+      (sampleFn ? '<p style="margin-top:6px"><button class="btn" type="button" data-act="company" data-oid="' + id + '"' + (busy["c" + o.id] ? " disabled" : "") + ">" + (busy["c" + o.id] ? "Recherche…" : (facts.length ? "Actualiser avec Claude" : "Compléter avec Claude")) + "</button> <span style=\"font-size:.78rem;color:var(--muted)\">d'après les connaissances de Claude, sans accès au web</span></p>" : "") + "</div>" + sugHtml(o) + ctsHtml;
 
     var ps = prepState[o.id];
     var prepText = ps ? ps.text : (o.prep_text || "");
     var prep = '<div class="wide"><h4>Préparation d\'entretien' + (o.prep_at && !ps ? " · générée le " + esc(fmtDate(o.prep_at)) : "") + "</h4>" +
       (sampleFn ? '<button class="btn solid" type="button" data-act="prep" data-oid="' + id + '"' + (ps && ps.running ? " disabled" : "") + ">" + (ps && ps.running ? "Claude rédige…" : (prepText ? "Régénérer" : "Préparer l'entretien")) + "</button>" +
         (ps && ps.running ? ' <button class="btn" type="button" data-act="prep-stop" data-oid="' + id + '">Stop</button>' : "") : "<p style=\"color:var(--muted)\">Disponible quand Claude est accessible depuis la page.</p>") +
-      (prepText ? '<div class="prep" data-prepout="' + id + '">' + fmtPrep(prepText) + "</div>" : "") +
+      (prepText || (ps && ps.running) ? '<div class="prep" data-prepout="' + id + '">' + fmtPrep(prepText) + "</div>" : "") +
       (ps && ps.error ? '<p style="color:var(--crit);margin-top:6px">' + esc(ps.error) + "</p>" : "") + "</div>";
     var cs = cvState[o.id], cvText = cs ? cs.text : (o.cv_text || ""), lang = "en";
     var annUrl = safeUrl(o.url) || (Array.isArray(o.links) && o.links.map(function (l) { return l && safeUrl(l.url); }).filter(Boolean)[0]) || "";
@@ -1661,10 +2383,12 @@ details a { color: var(--accent); }
       (sampleFn ? '<div class="cvbar">' +
         '<button class="btn solid" type="button" data-act="cv" data-oid="' + id + '"' + (cs && cs.running ? " disabled" : "") + ">" + (cs && cs.running ? "Claude rédige…" : (cvText ? "Régénérer le CV" : "Générer un CV pour ce poste")) + "</button>" +
         (cs && cs.running ? ' <button class="btn" type="button" data-act="cv-stop" data-oid="' + id + '">Stop</button>' : "") +
-        (cvText && !(cs && cs.running) ? ' <button class="btn" type="button" data-act="cv-copy" data-oid="' + id + '">Copier</button>' + (dlFn ? ' <button class="btn solid" type="button" data-act="cv-pdf" data-oid="' + id + '">Télécharger (.pdf)</button> <button class="btn" type="button" data-act="cv-dl" data-oid="' + id + '">Télécharger (.html)</button>' : "") : "") + "</div>" +
+        (cvText && !(cs && cs.running) ? (Object.keys(cvFills(id)).length ? ' <button class="btn" type="button" data-act="cv-reset" data-oid="' + id + '" title="Efface tous les champs remplis et rend le CV tel qu\'il a été généré">Revenir à la version initiale</button>' : "") + (zeroAsk[id] ? ' <button class="btn solid" type="button" data-act="cv-zero-yes" data-oid="' + id + '" style="background:var(--crit);border-color:var(--crit)">Confirmer : effacer ce CV</button> <button class="btn" type="button" data-act="cv-zero-no" data-oid="' + id + '">Annuler</button>' : ' <button class="btn" type="button" data-act="cv-zero" data-oid="' + id + '" title="Efface entièrement le CV de cette offre pour repartir de zéro">Remise à zéro</button>') + ' <button class="btn" type="button" data-act="cv-copy" data-oid="' + id + '">Copier</button>' + (dlFn ? ' <button class="btn solid" type="button" data-act="cv-pdf" data-oid="' + id + '">Télécharger (.pdf)</button> <button class="btn" type="button" data-act="cv-dl" data-oid="' + id + '">Télécharger (.html)</button>' : "") : "") + "</div>" +
         '<p style="font-size:.78rem;color:var(--muted);margin-top:4px">Réorganise et reformule ton parcours réel pour ce poste, sans rien inventer. Les chiffres viennent de ton CV ; relis-le avant envoi.</p>'
         : "<p style=\"color:var(--muted)\">Disponible quand Claude est accessible depuis la page.</p>") +
-      (cvText ? '<div class="cv" data-cvout="' + id + '">' + fmtCv(cvText) + "</div>" : "") +
+      (cvText || (cs && cs.running) ? '<div class="cv" data-cvout="' + id + '">' + fmtCv(cvText) + "</div>" : "") +
+      (cvText && o.cv_edited_at && !(cs && cs.running) ? '<p style="font-size:.78rem;color:var(--muted);margin-top:4px">Champs mis à jour le ' + esc(fmtDate(o.cv_edited_at)) + ". « Régénérer le CV » repartirait de ce texte et remettrait les champs à zéro.</p>" : "") +
+      (cvText && !(cs && cs.running) ? cvFillPanel(id) : "") +
       (cvText && !(cs && cs.running) ? atsPanel(o, cvText) : "") +
       ((cs && cs.match) || (!cs && o.cv_match) ? '<div class="cv cvmatch"><h5>Correspondance avec l\'annonce</h5>' + fmtCv((cs && cs.match) || o.cv_match) + "</div>" : "") +
       (cs && cs.error ? '<p style="color:var(--crit);margin-top:6px">' + esc(cs.error) + "</p>" : "") + "</div>";
@@ -1685,8 +2409,7 @@ details a { color: var(--accent); }
       signal: ctl.signal, cache: false, modelTier: routeTier("prep", o),
       onText: function (u) {
         st.text = u.text;
-        var box = document.querySelector('[data-prepout="' + id.replace(/"/g, "") + '"]');
-        if (box) box.innerHTML = fmtPrep(u.text); else renderList();
+        streamBox(document.querySelector('[data-prepout="' + id.replace(/"/g, "") + '"]'), function () { return fmtPrep(st.text); });
       }
     }).then(function (r) {
       st.running = false;
@@ -1707,21 +2430,25 @@ details a { color: var(--accent); }
     var lang = "en";
     var hasDesc = !!(o.description && String(o.description).trim().length > 80);
     var ctl = new AbortController();
+    var prevCvText = (o.cv_edited_at && cvText(id)) ? cvText(id) : "";
     var st = cvState[id] = { text: "", match: "", running: true, ctl: ctl, error: "" };
+    delete fillPrev[id]; delete fillRaw[id];
+    var prevCv = String(prevCvText || "").trim();
     var prompt = cvPrompt(o, hasDesc);
+    if (prevCv) prompt += "\n\nMODIFICATIONS DE L'UTILISATEUR À RESPECTER : voici la version actuelle de son CV, qu'il a relue et modifiée lui-même. Pars de cette version : conserve tout fait, chiffre, formulation ou correction qu'il y a apporté, et n'adapte que le vocabulaire au poste (mots de l'annonce seulement quand ils désignent la même chose que ce qui est déjà vrai dans le CV ou les faits autorisés), sans rien inventer.\n" + prevCv.slice(0, 7000);
     renderList();
     sampleFn(prompt, {
       signal: ctl.signal, cache: false, modelTier: routeTier("cv", o),
       onText: function (u) {
         var sp = splitCv(u.text); st.text = sp.cv; st.match = sp.match;
-        var box = document.querySelector('[data-cvout="' + id.replace(/"/g, "") + '"]');
-        if (box) box.innerHTML = fmtCv(sp.cv); else renderList();
+        streamBox(document.querySelector('[data-cvout="' + id.replace(/"/g, "") + '"]'), function () { return fmtCv(st.text); });
       }
     }).then(function (r) {
       st.running = false;
       var fin = splitCv(r.text || ""); st.text = fin.cv; st.match = fin.match;
       if (fin.cv) { var ar = atsCheck(o, fin.cv), av = atsVerdict(ar.pct); openIds.add(id); toast("CV généré · contrôle ATS : " + ar.pct + " / 100. " + av[0] + "."); }
-      if (db && fin.cv) writeDoc(id, { cv_text: fin.cv, cv_match: fin.match, cv_at: new Date().toISOString(), cv_lang: lang }).then(function () { renderList(); }).catch(function (e) { onWriteError(e); });
+      if (fin.cv) cvFS[id] = { tpl: fin.cv, fills: {} };
+      if (db && fin.cv) writeDoc(id, { cv_text: fin.cv, cv_tpl: fin.cv, cv_fills: {}, cv_match: fin.match, cv_at: new Date().toISOString(), cv_lang: lang }).then(function () { renderList(); }).catch(function (e) { onWriteError(e); });
       else renderList();
     }).catch(function (e) {
       st.running = false; st.error = sampleErr(e);
@@ -1733,6 +2460,118 @@ details a { color: var(--accent); }
   function splitCv(t) {
     var i = String(t || "").indexOf("=====ANALYSE=====");
     return i < 0 ? { cv: String(t || "").trim(), match: "" } : { cv: t.slice(0, i).trim(), match: t.slice(i + 17).trim() };
+  }
+  function cvTpl(id) { var o = findOffer(id) || {}; return String((cvFS[id] && cvFS[id].tpl) || o.cv_tpl || cvText(id) || ""); }
+  function cvFills(id) { var o = findOffer(id) || {}, f = (cvFS[id] && cvFS[id].fills) || o.cv_fills; return f && typeof f === "object" ? f : {}; }
+  function cvFillPanel(id) {
+    var tpl = cvTpl(id), fills = cvFills(id), phs = tpl.match(/\[[^\]]*\]/g) || [];
+    if (!phs.length) return "";
+    var done = 0; phs.forEach(function (p, i) { if (fills[i]) done++; });
+    var todo = phs.length - done;
+    return '<div class="cvfill"' + (todo ? "" : ' style="border-color:var(--line);background:var(--surface)"') + '><h4' + (todo ? "" : ' style="color:var(--fg)"') + '>' + phs.length + " champ" + (phs.length > 1 ? "s" : "") + " : " + todo + " à compléter, " + done + " rempli" + (done > 1 ? "s" : "") + ". Seuls ces champs changent, le reste du CV reste intact. Tu peux les rééditer à tout moment (uniquement ce qui est vrai, en français ou en anglais) : Claude adapte ta phrase au style du CV et au vocabulaire du poste, sans rien ajouter.</h4>" +
+      phs.map(function (p, i) {
+        var lab = p.slice(1, -1).replace(/^\s*(à compléter|to complete|a completer)\s*:?\s*/i, "") || "Information manquante", v = (fillRaw[id] && fillRaw[id][i] != null) ? fillRaw[id][i] : (fills[i] || "");
+        return '<label>' + (fills[i] ? "✓ " : "") + esc(lab) + '<input type="text" data-phfill="' + i + '" data-oid="' + id + '" value="' + esc(v) + '" placeholder="Écris ici (laisse vide pour garder le champ)" autocomplete="off"></label>';
+      }).join("") +
+      fillPreviewHtml(id) +
+      '<div><button class="btn solid" type="button" data-act="cv-fill" data-oid="' + id + '"' + (fillBusy[id] ? " disabled" : "") + '>' + (fillBusy[id] ? "Claude adapte…" : (fillPrev[id] ? "Régénérer l\'aperçu" : "Prévisualiser la modification")) + '</button></div></div>';
+  }
+  function calcExpr(ex) {
+    var s = String(ex || "").replace(/\s+/g, "");
+    if (!s || !/^[0-9+\-*/().]+$/.test(s)) return null;
+    var v; try { v = Function('"use strict";return (' + s + ")")(); } catch (e) { return null; }
+    if (typeof v !== "number" || !isFinite(v)) return null;
+    return (Math.round(v * 100) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  }
+  function fillSubst(tpl, map) { var j = 0; return tpl.replace(/\[[^\]]*\]/g, function (m) { var v = map[j]; j++; return v ? v : m; }); }
+  function fillPreviewHtml(id) {
+    var pv = fillPrev[id]; if (!pv || fillBusy[id]) return "";
+    var notes = (pv.calcs && pv.calcs.length ? '<p style="margin:6px 0;font-size:.82rem"><b>Calculs faits par la page :</b> ' + pv.calcs.map(function (c) { return "<code>" + esc(c) + "</code>"; }).join(" ; ") + ".</p>" : "") +
+      (pv.missing && pv.missing.length ? '<p style="margin:6px 0;font-size:.82rem;color:var(--warn)"><b>Donnée manquante :</b> ' + pv.missing.map(esc).join(" ; ") + ". Complète la case puis relance l'aperçu.</p>" : "");
+    var clean = function (l) { return esc(String(l).replace(/^\s*(?:#{1,4}\s+|[-*•]\s+)/, "").replace(/\*\*/g, "")); };
+    return '<div style="border:1px solid var(--accent);border-radius:8px;padding:10px 12px;background:var(--accent-soft)"><h4 style="margin:0 0 4px;font-size:.85rem;color:var(--fg);text-transform:none;letter-spacing:0">Aperçu : rien n\'est encore écrit dans le CV (' + pv.rows.length + " ligne" + (pv.rows.length > 1 ? "s" : "") + " modifiée" + (pv.rows.length > 1 ? "s" : "") + ")</h4>" +
+      pv.rows.map(function (r) { return '<div style="margin:6px 0;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg)"><div style="color:var(--crit);text-decoration:line-through;font-size:.84rem;overflow-wrap:anywhere"><span class="todo" style="text-decoration:none;background:none;color:var(--muted);font-weight:500">Avant</span> ' + clean(r.b) + '</div><div style="color:var(--good);font-size:.88rem;font-weight:600;overflow-wrap:anywhere"><span style="color:var(--muted);font-weight:500">Après</span> ' + clean(r.a) + "</div></div>"; }).join("") +
+      notes + '<div class="cvbar">' + (pv.rows.length ? '<button class="btn solid" type="button" data-act="cv-fill-ok" data-oid="' + id + '">Valider et écrire dans le CV</button> ' : "") + '<button class="btn" type="button" data-act="cv-fill-no" data-oid="' + id + '">' + (pv.rows.length ? "Ne pas appliquer" : "Fermer") + '</button></div></div>';
+  }
+  function fillCv(id) {
+    if (fillBusy[id]) return;
+    var o = findOffer(id) || {}, tpl = cvTpl(id), fills = cvFills(id);
+    var inputs = document.querySelectorAll('input[data-phfill][data-oid="' + String(id).replace(/"/g, "") + '"]'), vals = {}, cleared = [], raw = {}, n = 0;
+    Array.prototype.forEach.call(inputs, function (el) {
+      var i = el.getAttribute("data-phfill"), v = el.value.replace(/[\[\]\r\n]+/g, " ").trim(), old = fills[i] || "";
+      raw[i] = v;
+      if (v === old) return;
+      n++; if (v) vals[i] = v; else cleared.push(i);
+    });
+    if (!n) { toast("Rien à changer : modifie au moins un champ."); return; }
+    fillRaw[id] = raw; delete fillPrev[id];
+    var ctxs = [], k = 0;
+    tpl.split("\n").forEach(function (ln) { var m = ln.match(/\[[^\]]*\]/g); if (m) m.forEach(function () { ctxs[k++] = ln.trim(); }); });
+    var preview = function (map, calcs, missing) {
+      calcs = calcs || []; missing = missing || [];
+      var nf = {}; Object.keys(fills).forEach(function (i) { nf[i] = fills[i]; });
+      cleared.forEach(function (i) { delete nf[i]; });
+      Object.keys(map).forEach(function (i) { nf[i] = map[i]; });
+      var before = fillSubst(tpl, fills), after = fillSubst(tpl, nf), bl = before.split("\n"), al = after.split("\n"), rows = [];
+      al.forEach(function (ln, x) { if (ln !== bl[x]) rows.push({ b: bl[x], a: ln }); });
+      if (!rows.length) { if (missing.length) { toast("Donnée manquante : " + missing.join(" ; ")); fillPrev[id] = { tpl: tpl, nf: fills, text: before, rows: [], n: 0, calcs: calcs, missing: missing }; } else { toast("Aucune différence dans le CV."); delete fillRaw[id]; } return; }
+      fillPrev[id] = { tpl: tpl, nf: nf, text: after, rows: rows, n: n, calcs: calcs, missing: missing };
+    };
+    if (!sampleFn || !Object.keys(vals).length) { preview(vals); renderList(); return; }
+    fillBusy[id] = true; renderList();
+    var hasDesc = !!(o.description && String(o.description).trim().length > 80);
+    var items = Object.keys(vals).map(function (i) { return i + " | Ligne du CV : " + (ctxs[i] || "") + "\n   Phrase de l'utilisateur : " + vals[i]; }).join("\n");
+    var prompt = "Tu adaptes des phrases écrites par l'utilisateur pour compléter ou corriger des champs de son CV (anglais, une seule page, marché israélien). Seuls ces champs changent : le reste du CV ne doit jamais être modifié.\n\nCV ACTUEL :\n" + cvText(id).slice(0, 6000) +
+      "\n\nPOSTE VISÉ :\nPoste : " + (o.title || "") + "\nEntreprise : " + (o.company || "") +
+      (hasDesc ? "\n\nANNONCE (source du vocabulaire du poste) :\n" + String(o.description).slice(0, 6000) : "") +
+      "\n\nCHAMPS À COMPLÉTER OU CORRIGER (numéro | ligne du CV où se trouve le champ, puis la phrase de l'utilisateur) :\n" + items +
+      "\n\nRÈGLES STRICTES :\n- Réécris chaque phrase de l'utilisateur pour qu'elle s'intègre exactement à l'endroit du champ : en anglais, même style concis et orienté résultat que les lignes voisines, même temps verbal, longueur proche d'un point du CV.\n- Vocabulaire du poste : reprends un mot du titre ou de l'annonce uniquement quand il désigne exactement la même chose que ce que l'utilisateur a écrit (exemple : « incident management » pour la gestion des incidents). Jamais pour un outil, une technologie, un chiffre ou une expérience qu'il n'a pas mentionnés.\n- Calculs : quand une valeur (budget, total, pourcentage, durée, effectif) doit être calculée à partir de chiffres donnés par l'utilisateur, n'écris pas le résultat toi-même : écris l'opération entre doubles accolades, par exemple {{6*85000}}, avec uniquement des nombres, + - * / ( ) et le point décimal (la page fait le calcul exact). Utilise seulement des chiffres donnés par l'utilisateur ou déjà présents dans le CV : jamais de valeur recherchée, estimée ou supposée. Si une donnée nécessaire manque, réponds pour ce champ « numéro: MANQUE : la donnée à fournir » au lieu de deviner.\n- N'ajoute AUCUN fait, chiffre, outil, employeur, diplôme ou résultat absent de sa phrase ou du CV. Ne renforce pas ce qu'il dit.\n- Pas de crochets, pas de guillemets, pas de point final inutile, pas de tiret en début de ligne.\n- Réponds UNIQUEMENT par une ligne par champ, au format « numéro: texte », sans commentaire.";
+    sampleFn(prompt, { cache: false, modelTier: routeTier("cv", o) }).then(function (r) {
+      var map = {}; String(r.text || "").split("\n").forEach(function (ln) { var m = /^\s*(\d+)\s*[:.)-]\s*(.+?)\s*$/.exec(ln); if (m && vals[m[1]] != null) map[m[1]] = m[2].replace(/[\[\]]+/g, ""); });
+      var calcs = [], missing = [];
+      Object.keys(map).forEach(function (i) {
+        var t = map[i];
+        if (/^\s*MANQUE\s*:/i.test(t)) { missing.push(t.replace(/^\s*MANQUE\s*:\s*/i, "")); delete map[i]; return; }
+        map[i] = t.replace(/\{\{([^{}]*)\}\}/g, function (all, ex) { var res = calcExpr(ex); if (res == null) { missing.push("calcul impossible : " + ex.trim()); return ex.trim(); } calcs.push(ex.trim() + " = " + res); return res; });
+      });
+      Object.keys(vals).forEach(function (i) { if (!map[i] && !missing.length) map[i] = vals[i]; });
+      preview(map, calcs, missing);
+    }).catch(function (e) { toast("Adaptation impossible (" + sampleErr(e) + ") : aperçu avec ton texte tel quel."); preview(vals, [], []); })
+      .then(function () { fillBusy[id] = false; renderList(); });
+  }
+  function fillCommit(id) {
+    var pv = fillPrev[id]; if (!pv) return;
+    if (!db) { needDb(); return; }
+    var o = findOffer(id) || {};
+    delete fillPrev[id]; delete fillRaw[id];
+    var cs = cvState[id] || (cvState[id] = { text: "", match: o.cv_match || "", running: false, error: "" });
+    cs.text = pv.text; cvFS[id] = { tpl: pv.tpl, fills: pv.nf }; openIds.add(id);
+    renderList();
+    writeDoc(id, { cv_text: pv.text, cv_tpl: pv.tpl, cv_fills: pv.nf, cv_edited_at: new Date().toISOString() }).then(function () { toast(pv.n + " champ" + (pv.n > 1 ? "s" : "") + " écrit" + (pv.n > 1 ? "s" : "") + " dans le CV."); }).catch(function (e) { onWriteError(e); });
+  }
+  var fillBusy = {};
+  var fillRaw = {}, fillPrev = {};
+  var cvFS = {};
+  var zeroAsk = {};
+  function zeroCv(id) {
+    delete zeroAsk[id];
+    if (!db) { needDb(); renderList(); return; }
+    var o = findOffer(id); if (!o) return;
+    o.cv_text = ""; o.cv_tpl = ""; o.cv_fills = {}; o.cv_match = ""; o.cv_at = ""; o.cv_edited_at = "";
+    cvState[id] = { text: "", match: "", running: false, error: "" }; delete cvFS[id];
+    delete fillPrev[id]; delete fillRaw[id];
+    openIds.add(id); renderList();
+    writeDoc(id, { cv_text: "", cv_tpl: "", cv_fills: {}, cv_match: "", cv_at: "", cv_edited_at: "" }).then(function () { toast("CV effacé. Tu peux en générer un nouveau."); renderList(); }).catch(function (e) { onWriteError(e); });
+  }
+  function resetCv(id) {
+    if (!db) { needDb(); return; }
+    var o = findOffer(id) || {}, tpl = cvTpl(id);
+    if (!tpl) return;
+    var cs = cvState[id] || (cvState[id] = { text: "", match: o.cv_match || "", running: false, error: "" });
+    cs.text = tpl; cvFS[id] = { tpl: tpl, fills: {} }; openIds.add(id);
+    delete fillPrev[id]; delete fillRaw[id];
+    renderList();
+    writeDoc(id, { cv_text: tpl, cv_tpl: tpl, cv_fills: {}, cv_edited_at: "" }).then(function () { toast("CV remis à la version initiale."); renderList(); }).catch(function (e) { onWriteError(e); });
   }
   function cvText(id) { var o = findOffer(id) || {}, cs = cvState[id]; return cs && cs.text ? cs.text : (o.cv_text || ""); }
   function copyCv(id) {
@@ -1752,6 +2591,7 @@ details a { color: var(--accent); }
   function renderCvPdf(J, text, sc) {
     var doc = new J({ unit: "pt", format: "a4" }), W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = sc < 0.9 ? 34 : 42, maxW = W - 2 * M, y = M, afterTitle = false;
     function need(h) { if (y + h > H - M) { doc.addPage(); y = M; } }
+    try { doc.setProperties({ title: 'CV ' + (CV.name || ''), author: CV.name || '', creator: CV.name || '' }); } catch (e) {}
     var todoState = { on: false };
     function richLine(l, x, yy, size, base) {
       l.split(/(\[|\])/).forEach(function (tok) {
@@ -1838,8 +2678,71 @@ details a { color: var(--accent); }
   }
 
 
+  /* Bloc « Prochaine étape » en tête de la fiche : Plan, CV, Postuler, Suivi. */
+  function stepHtml(o) {
+    if (["refus", "ignore", "expiree", "hebreu_avance", "surqualifie", "accred_defense"].indexOf(o.status) >= 0) return "";
+    var id = esc(o.id), cs = cvState[o.id];
+    var done = [
+      !!aiText("plan", o.id),
+      !!((cs && cs.text) || o.cv_text),
+      ["postule", "relance", "entretien", "offre"].indexOf(o.status) >= 0 || !!o.applied_at,
+      ["entretien", "offre"].indexOf(o.status) >= 0
+    ];
+    var cur = done.indexOf(false), names = ["Plan", "CV", "Postuler", "Suivi"];
+    var url = safeUrl(o.url), title, text, cta = "";
+    if (cur === 0) {
+      title = "Écris le plan de candidature"; text = "Le message au recruteur et les points à mettre en avant pour ce poste.";
+      if (sampleFn) cta = '<button class="btn solid" type="button" data-act="ai-run" data-kind="plan" data-oid="' + id + '">Plan de candidature</button>';
+    } else if (cur === 1) {
+      title = "Génère ton CV pour ce poste";
+      text = o.description ? "Une page, en anglais, avec les mots de l'annonce." : "Colle d'abord le texte de l'annonce plus bas : le CV sera mieux ciblé.";
+      if (sampleFn) cta = '<button class="btn solid" type="button" data-act="cv" data-oid="' + id + '">Générer le CV</button>';
+    } else if (cur === 2) {
+      title = "Postule, puis note-le ici"; text = "Un clic sur « J'ai postulé » enregistre la date et programme la vérification d'une réponse.";
+      cta = '<button class="btn solid" type="button" data-act="applied" data-oid="' + id + '">J\'ai postulé</button>' + (url ? ' <a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Ouvrir l\'annonce ↗</a>' : "");
+    } else if (cur === 3) {
+      title = "Attends une réponse"; text = "Les réponses sont repérées dans ta boîte mail. Note le contact et les échanges plus bas.";
+    } else { title = "Entretien en cours"; text = "Prépare-le plus bas (fiche entreprise, préparation, langue locale)."; }
+    var n = cur < 0 ? 4 : cur + 1;
+    return '<div class="wide stepper"><div class="sthead"><b>Prochaine étape</b><span>' + n + " sur 4</span></div><ol>" +
+      names.map(function (nm, i) { return '<li class="' + (done[i] ? "done" : (i === cur ? "now" : "")) + '"' + (i === cur ? ' aria-current="step"' : "") + "><i></i>" + nm + (done[i] ? " ✓" : "") + "</li>"; }).join("") +
+      "</ol><h5>" + title + "</h5><p>" + text + "</p>" + (cta ? '<div class="stcta">' + cta + "</div>" : "") + "</div>";
+  }
+  var ICO_BOLT = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>';
+  var ICO_BACK = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+  function jfText(h) { return h.left === 0 ? "dernier jour" : h.left + (h.left > 1 ? " jours restants" : " jour restant"); }
+
+  /* Détail du score (« rôle 23/30 (…) · séniorité 15/15 (…) … = 78 ») en barres. */
+  function scoreBars(o) {
+    var sd = String(o.score_detail || ""); if (!sd) return "";
+    var rows = [];
+    sd.split(/\s·\s/).forEach(function (p) {
+      var m = /^\s*([^\d(]+?)\s*(\d+(?:[.,]\d+)?)\s*\/\s*(\d+)\s*(?:\(([^)]*)\))?/.exec(p); if (!m) return;
+      var got = parseFloat(m[2].replace(",", ".")), max = parseFloat(m[3]); if (!max) return;
+      var lb = m[1].replace(/^./, function (c) { return c.toUpperCase(); });
+      rows.push('<div class="sbar2" title="' + esc(m[4] || "") + '"><span class="l">' + esc(lb) + '</span><span class="t"><i style="width:' + Math.min(100, Math.round(100 * got / max)) + '%"></i></span><b>' + esc(m[2]) + "/" + esc(m[3]) + "</b></div>");
+    });
+    return rows.length ? '<div class="sbars2">' + rows.join("") + "</div>" : "";
+  }
+
+  /* Compétences demandées (required_skills), avec les points peu documentés dans ton CV. */
+  function reqHtml(o) {
+    var s = String(o.required_skills || ""); if (!s.trim()) return "";
+    var GAP = /azure|m365|office 365|microsoft 365|kubernetes|k8s/i;
+    var main = s, plus = "", pi = s.search(/\bplus\s*:/i);
+    if (pi >= 0) { main = s.slice(0, pi); plus = s.slice(pi).replace(/^plus\s*:/i, ""); }
+    function items(x) { return x.split(/[;,]\s*/).map(function (t) { return t.replace(/^[\s.]+|[\s.]+$/g, ""); }).filter(Boolean); }
+    function row(t, atout) {
+      var gap = GAP.test(t);
+      return '<div class="req"><span>' + esc(t) + "</span>" + (gap ? '<em class="gap">Peu documenté</em>' : (atout ? "<em>Atout</em>" : "")) + "</div>";
+    }
+    var h = items(main).map(function (t) { return row(t, false); }).join("") + items(plus).map(function (t) { return row(t, true); }).join("");
+    if (!h) return "";
+    return '<section class="card"><h3>Ce que l\'annonce demande</h3><div>' + h + '</div><p class="hint">Les points « peu documenté » ne sont jamais ajoutés au CV : ils servent à préparer l\'entretien.</p></section>';
+  }
+
   function rowHtml(o) {
-    var url = safeUrl(o.url);
+    var url = safeUrl(o.url), id = esc(o.id);
     var rp = Number(o.repost_count) || 0;
     var links = Array.isArray(o.links) ? o.links : [];
     var srcSet = {};
@@ -1847,27 +2750,31 @@ details a { color: var(--accent); }
     links.forEach(function (l) { if (l && l.source) srcSet[l.source] = 1; });
     var nSrc = Object.keys(srcSet).length;
     var rdates = Array.isArray(o.repost_dates) ? o.repost_dates : [];
-    var mi = matchInfo(o);
-    var badges = "";
-    if (mi.pct != null) badges += '<span class="pct" title="' + (o.score_detail ? esc(o.score_detail) : (mi.est ? 'Match estimé d\'après le tier' : 'Match enregistré')) + '">' + (mi.est ? '~' : '') + mi.pct + ' %</span>';
-    if (o.status === "nouveau") badges += '<span class="badge new">Nouveau</span>';
-    if (rp > 0) badges += '<span class="badge repost">Republiée ×' + rp + "</span>";
-    if (nSrc > 1) badges += '<span class="badge multi">Vue sur ' + nSrc + " sites</span>";
-    if (o.recruiter) badges += '<span class="badge via" title="Offre transmise par un cabinet de recrutement">via ' + esc(o.recruiter) + "</span>";
-    badges += qzBadge(o);
-    var meta = [];
-    if (o.company) meta.push("<b>" + esc(o.company) + "</b>");
-    if (o.location) meta.push(cityChip(o.location) || esc(o.location));
-    meta.push(esc(MODES[o.mode] || MODES.unknown));
-    var meta2 = [];
+    var mi = matchInfo(o), hot = jfHot(o);
+    var isOpen = openIds.has(o.id);
+    var pill = '<span class="pctpill' + (mi.pct != null && mi.pct >= 70 ? "" : " lo") + '" title="' + (o.score_detail ? esc(o.score_detail) : (mi.est ? "Match estimé d'après le tier" : "Match enregistré")) + '">' + (mi.pct != null ? (mi.est ? "~" : "") + mi.pct + " %" : "—") + "</span>";
+    var co = [o.company ? esc(o.company) : "", o.recruiter ? "via " + esc(o.recruiter) : ""].filter(Boolean).join(" · ");
+    var cn = cityName(o.location) || o.location;
     var cm = commuteMin(o);
-    if (cm != null) meta2.push('<a class="trip ' + tripClass(cm) + '" href="' + esc(mapsUrl(o)) + '" target="_blank" rel="noopener noreferrer" title="Trajet renseigné dans la fiche. Ouvre Google Maps pour l\'horaire exact.">' + fmtMin(cm) + '</a>');
-    else if (o.mode === 'remote') meta2.push('<span class="trip t-none">Pas de trajet</span>');
-    else if (CFG.home_area && o.location) meta2.push('<a class="trip t-mid" href="' + esc(mapsUrl(o)) + '" target="_blank" rel="noopener noreferrer" title="Itinéraire depuis ' + esc(CFG.home_area) + ' (Google Maps)">Itinéraire</a>');
-    var sl = siteLinks(o); if (sl) meta2.push(sl); else if (o.source) meta2.push(esc(o.source));
-    if (o.salary_text) meta2.push(esc(o.salary_text) + (o.salary_est ? " (estim.)" : ""));
-    else { var smini = SAL.mini(o); if (smini) meta2.push(smini); }
-    if (o.hebrew && HEBREW[o.hebrew]) meta2.push(esc(HEBREW[o.hebrew]));
+    var salTxt = o.salary_text ? esc(String(o.salary_text).split(" (")[0]) + (o.salary_est ? " (estim.)" : "") : (SAL.mini(o) || "");
+
+    /* Tuile */
+    var meta = [];
+    if (cn) meta.push(esc(cn));
+    meta.push(esc(MODES[o.mode] || MODES.unknown));
+    if (salTxt) meta.push(salTxt);
+    if (cm != null) meta.push(fmtMin(cm) + " depuis chez toi");
+    var chips = o.status === "nouveau" ? '<span class="chip chip-new">Nouveau</span>' : '<span class="chip' + (o.status === "postule" ? " chip-postule" : "") + '">' + esc(statusLabel(o.status)) + "</span>";
+    if (rp > 0) chips += '<span class="chip">Republiée ×' + rp + "</span>";
+    if (nSrc > 1) chips += '<span class="chip">Vue sur ' + nSrc + " sites</span>";
+    chips += qzBadge(o) + relBadge(o);
+    var star = '<button class="btn star" type="button" data-fav="' + id + '" aria-pressed="' + (o.fav ? "true" : "false") + '" title="' + (o.fav ? "Retirer des favoris" : "Ajouter aux favoris") + '" aria-label="Favori">' + (o.fav ? "★" : "☆") + "</button>";
+
+    /* Fiche */
+    var modeChip = '<span class="chip">' + esc(MODES[o.mode] || MODES.unknown) + "</span>";
+    var topChips = pill + (cn ? '<span class="chip">' + esc(cn) + "</span>" : "") + modeChip + (salTxt ? '<span class="chip">' + salTxt + "</span>" : "") +
+      (o.hebrew && HEBREW[o.hebrew] ? '<span class="chip">' + esc(HEBREW[o.hebrew]) + "</span>" : "") +
+      (cm != null ? '<a class="chip" href="' + esc(mapsUrl(o)) + '" target="_blank" rel="noopener noreferrer" title="Trajet renseigné dans la fiche. Ouvre Google Maps pour l\'horaire exact.">' + fmtMin(cm) + "</a>" : (o.mode !== "remote" && CFG.home_area && o.location ? '<a class="chip" href="' + esc(mapsUrl(o)) + '" target="_blank" rel="noopener noreferrer" title="Itinéraire depuis ' + esc(CFG.home_area) + ' (Google Maps)">Itinéraire</a>' : ""));
     var dates = [];
     if (o.posted_at) dates.push("Publiée " + fmtDate(o.posted_at));
     if (o.first_seen) dates.push("Vue " + fmtDate(o.first_seen));
@@ -1875,36 +2782,83 @@ details a { color: var(--accent); }
     var opts = STATUSES.map(function (s) {
       return '<option value="' + s[0] + '"' + (s[0] === o.status ? " selected" : "") + ">" + s[1] + "</option>";
     }).join("");
-    var isOpen = openIds.has(o.id);
     var linkList = links.map(function (l) {
       var u = l && safeUrl(l.url);
       return u ? '<li><a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(l.source || "Lien") + "</a></li>" : "";
     }).join("");
-    var detail =
-      '<div class="detail" ' + (isOpen ? "" : "hidden") + ">" +
-      '<div class="wide"><h4>Pourquoi cette offre</h4><p>' + esc(o.fit_note || "Pas de justification enregistrée.") + "</p></div>" +
+    var hp = "";
+    var canAct = o.status === "nouveau" || o.status === "a_postuler";
+    var sheet =
+      '<div class="detail sheet" ' + (isOpen ? "" : "hidden") + ' role="dialog" aria-label="Fiche de l\'offre">' +
+      '<div class="sh-bar"><button class="sh-back" type="button" data-toggle="' + id + '">' + ICO_BACK + "Offres</button>" +
+      '<span class="sh-acts">' + star + (url ? '<a class="sh-ic" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir l\'annonce" title="Ouvrir l\'annonce">↗</a>' : "") + "</span></div>" +
+      '<div class="sh-body">' +
+      '<div class="sh-title"><h2>' + esc(o.title || "Sans intitulé") + '</h2><div class="co">' + co + '</div><div class="sh-chips">' + topChips + "</div></div>" +
+      (hot ? '<div class="sh-jf">' + ICO_BOLT + "<span><b>Urgent · " + jfText(hot) + ".</b> Ces annonces partent vite : postule avant qu'elle disparaisse.</span></div>" : "") +
+      stepHtml(o) +
+      '<section class="card"><h3>Pourquoi cette offre</h3><p>' + esc(o.fit_note || "Pas de justification enregistrée.") + "</p>" + scoreBars(o) + "</section>" +
+      reqHtml(o) +
+      (hp ? '<section class="card">' + hp + "</section>" : "") +
+      '<div class="dgrid">' + detailExtra(o) + "</div>" +
+      '<section class="card"><h3>Mon suivi</h3><label for="st-' + id + '">Statut</label>' +
+      '<select id="st-' + id + '" class="status s-' + esc(o.status) + '" data-status="' + id + '" aria-label="Statut">' + opts + "</select>" +
+      '<label for="nt-' + id + '">Notes</label><textarea id="nt-' + id + '" data-notes="' + id + '" placeholder="Contact, échange, prochaine étape">' + esc(o.notes || "") + "</textarea>" +
+      '<p class="hint">' + esc(dates.join(" · ")) + "</p></section>" +
+      '<details class="card tech"><summary>Liens, historique, clé</summary><div class="dgrid">' +
       "<div><h4>Liens</h4><ul>" + (url ? '<li><a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(o.source || "Annonce") + " (principal)</a></li>" : "") + linkList + "</ul></div>" +
       "<div><h4>Historique</h4><p>Première vue : " + esc(fmtDateTime(o.first_seen)) + "<br>Dernier passage : " + esc(fmtDateTime(o.last_seen)) +
       (rdates.length ? "<br>Republiée le " + rdates.map(function (d) { return esc(fmtDate(d)); }).join(", ") : "") +
       (o.applied_at ? "<br>Postulée le " + esc(fmtDate(o.applied_at)) : "") + "</p></div>" +
-      "<div><h4>Clé anti-doublon</h4><p><code>" + esc(o.id) + "</code></p></div>" +
-      detailExtra(o) +
-      '<div class="wide"><h4>Mes notes</h4><textarea data-notes="' + esc(o.id) + '" placeholder="Contact, échange, prochaine étape">' + esc(o.notes || "") + "</textarea></div>" +
+      "<div><h4>Clé anti-doublon</h4><p><code>" + esc(o.id) + "</code></p></div></div></details>" +
+      "</div>" +
+      '<div class="sh-foot">' + (canAct
+        ? '<button class="btn" type="button" data-act="ignore" data-oid="' + id + '">Ignorer</button><button class="btn" type="button" data-act="closed" data-oid="' + id + '">Fermée / expirée</button><button class="btn solid" type="button" data-act="applied" data-oid="' + id + '">J\'ai postulé</button>'
+        : '<button class="btn solid" type="button" data-toggle="' + id + '">Fermer</button>') + "</div>" +
       "</div>";
-    return '<article class="row ' + matchClass(mi.pct) + (o.status === "nouveau" ? " is-new" : "") + (relInfo(o) ? " rel-due" : "") + (o.fav ? " is-fav" : "") + '" data-id="' + esc(o.id) + '">' +
-      '<div class="tier t' + esc(o.tier) + '" title="Tier ' + esc(o.tier) + '">' + esc(o.tier) + "</div>" +
-      '<div class="main"><h3>' + esc(o.title || "Sans intitulé") + '<span class="badges">' + badges + relBadge(o) + "</span></h3>" +
-      '<p class="meta">' + meta.join(" · ") + "</p>" + (meta2.length ? '<p class="meta">' + meta2.join(" · ") + "</p>" : "") + sugHtml(o) + "</div>" +
-      '<div class="dates">' + dates.join("<br>") + "</div>" +
-      '<select class="status s-' + esc(o.status) + '" data-status="' + esc(o.id) + '" aria-label="Statut">' + opts + "</select>" +
-      '<div class="actions"><button class="btn star" type="button" data-fav="' + esc(o.id) + '" aria-pressed="' + (o.fav ? "true" : "false") + '" title="' + (o.fav ? "Retirer des favoris" : "Ajouter aux favoris") + '" aria-label="Favori">' + (o.fav ? "\u2605" : "\u2606") + "</button>" + (url ? '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Ouvrir</a>' : "") +
-      '<button class="btn" type="button" data-toggle="' + esc(o.id) + '" aria-expanded="' + isOpen + '">' + (isOpen ? "Moins" : "Plus") + "</button></div>" +
-      detail + "</article>";
+
+    return '<div class="cell"><article class="row ' + matchClass(mi.pct) + (o.status === "nouveau" ? " is-new" : "") + (relInfo(o) ? " rel-due" : "") + (o.fav ? " is-fav" : "") + (hot ? " jf-hot" : "") + (isOpen ? " is-open" : "") + '" data-id="' + id + '">' +
+      (hot ? '<div class="jfban">' + ICO_BOLT + "Urgent · " + jfText(hot) + "</div>" : "") +
+      '<div class="tl-top">' + pill + '<div class="tl-main"><h3>' + esc(o.title || "Sans intitulé") + '</h3><div class="tl-co">' + co + "</div></div>" + star + "</div>" +
+      '<div class="tl-meta">' + meta.join(" · ") + "</div>" +
+      sugHtml(o) +
+      '<div class="tl-foot"><span class="tl-chips">' + chips + '</span><button class="btn go' + (hot || o.tier === "A" ? " solid" : "") + '" type="button" data-toggle="' + id + '" aria-expanded="' + isOpen + '">' + (isOpen ? "Fiche ouverte" : "Ouvrir la fiche") + "</button></div>" +
+      sheet + "</article></div>";
   }
 
+  /* Garde la position de scroll quand on reconstruit la liste (sinon la page se raccourcit un instant et le navigateur saute tout en bas). */
+  function keepScroll(fn) {
+    var de = document.documentElement, b = document.body;
+    var y = window.pageYOffset || de.scrollTop || b.scrollTop || 0;
+    var h = Math.max(de.scrollHeight, b.scrollHeight);
+    var prev = b.style.minHeight;
+    b.style.minHeight = h + "px";
+    try { fn(); } finally {
+      b.style.minHeight = prev;
+      var cur = window.pageYOffset || de.scrollTop || b.scrollTop || 0;
+      if (Math.abs(cur - y) > 2) { try { window.scrollTo({ top: y, left: 0, behavior: "instant" }); } catch (er) { window.scrollTo(0, y); } }
+    }
+  }
   function renderList() {
+    /* Garde aussi le défilement interne des boîtes CV / notes quand la liste est reconstruite. */
+    var keep = [];
+    document.querySelectorAll("[data-cvout],[data-prepout],[data-aiout]").forEach(function (b) {
+      if (!b.scrollTop) return;
+      var a = b.hasAttribute("data-cvout") ? "data-cvout" : b.hasAttribute("data-prepout") ? "data-prepout" : "data-aiout";
+      keep.push(["[" + a + '="' + String(b.getAttribute(a)).replace(/"/g, "") + '"]', b.scrollTop]);
+    });
+    /* La fiche ouverte (.sheet) défile toute seule : la reconstruire la remettait en haut à chaque mise à jour de la base (offres, contacts, quiz...), d'où les sauts. */
+    var sh = document.querySelector(".sheet:not([hidden])"), shArt = sh && sh.closest("[data-id]"), shId = shArt ? shArt.getAttribute("data-id") : "", shTop = sh ? sh.scrollTop : 0;
+    keepScroll(renderListRaw);
+    if (shId && shTop) {
+      var art = document.querySelector('[data-id="' + shId.replace(/"/g, "") + '"]'), ns = art && art.querySelector(".sheet:not([hidden])");
+      if (ns) ns.scrollTop = shTop;
+    }
+    keep.forEach(function (k) { var e = document.querySelector(k[0]); if (e) e.scrollTop = k[1]; });
+  }
+  function renderListRaw() {
     var list = $("#list");
-    var shown = offers.filter(matches).sort(sorter);
+    var shown = offers.filter(function (o) { return matches(o); }).sort(sorter);
+    var pool = offers.filter(function (o) { return matches(o, true); });
     if (!offers.length) {
       list.innerHTML = '<div class="empty"><strong>Aucune offre suivie pour l\'instant</strong><p>' +
         (db ? "La veille repère les nouvelles annonces 4 fois par jour et les range ici, sans doublon." : "La base de données n'est pas disponible dans cette vue. Rouvre la page depuis claude.ai.") +
@@ -1913,13 +2867,17 @@ details a { color: var(--accent); }
       return;
     }
     if (!shown.length) {
-      list.innerHTML = '<div class="empty"><strong>Aucune offre ne correspond</strong><p>Change d\'onglet ou retire un filtre.</p></div>';
+      var filt = otherFiltersOn();
+      list.innerHTML = '<div class="empty"><strong>Aucune offre ne correspond</strong><p>' +
+        (ui.q ? "La recherche couvre toutes les offres, archives comprises : poste, société, ville, lien de l'annonce, clé, notes, texte de l'annonce, contacts, dates et statut." : "Change d'onglet ou retire un filtre.") +
+        (filt ? ' Un filtre est actif.</p><p style="margin-top:10px"><button class="btn solid" type="button" data-resetf="1">Retirer les filtres</button>' : "") + "</p></div>";
+      renderLegend(pool);
       $("#count").textContent = "0 offre affichée";
       return;
     }
     list.innerHTML = shown.map(rowHtml).join("");
-    renderLegend(shown);
-    $("#count").textContent = shown.length + (shown.length > 1 ? " offres affichées" : " offre affichée");
+    renderLegend(pool);
+    $("#count").textContent = shown.length + (shown.length > 1 ? " offres affichées" : " offre affichée") + (ui.q ? " · recherche dans toutes les offres, archives comprises" : "");
   }
 
   function renderScanLog() {
@@ -2068,7 +3026,8 @@ details a { color: var(--accent); }
     b.scrollIntoView({ behavior: rm ? "auto" : "smooth", block: "start" });
   });
 
-  function renderAll() {
+  function renderAll() { keepScroll(renderAllRaw); }
+  function renderAllRaw() {
     renderStats(); renderTabs(); renderRelBar(); renderQzBar(); renderNet(); renderCities(); renderCompanies(); renderSources(); renderPulse(); renderScanLog(); renderFunnel(); renderDaily(); renderSeason();
     var a = document.activeElement;
     if (a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT") && $("#list").contains(a)) { deferred = true; return; }
@@ -2119,14 +3078,31 @@ details a { color: var(--accent); }
     ui.tab = b.getAttribute("data-tab"); renderStats(); renderTabs(); renderList();
   });
   $("#q").addEventListener("input", function (e) { ui.q = e.target.value.trim(); renderList(); });
+  $("#list").addEventListener("click", function (e) {
+    if (!e.target.closest("[data-resetf]")) return;
+    resetFilters(); renderStats(); renderList();
+  });
   $("#fCo").addEventListener("input", function (e) { ui.co = e.target.value.trim(); renderList(); });
   $("#fTier").addEventListener("change", function (e) { ui.tier = e.target.value; renderList(); });
-  $("#fCity").addEventListener("change", function (e) { ui.city = e.target.value; renderList(); });
+  $("#fCity").addEventListener("change", function (e) { ui.cityIn = e.target.value ? [e.target.value] : []; ui.cityOut = []; renderCityBar(); renderList(); });
+  document.addEventListener("click", function (e) {
+    var rb = e.target.closest && e.target.closest("[data-cityreset]");
+    if (rb) { ui.cityIn = []; ui.cityOut = []; renderCities(); renderList(); return; }
+    var b = e.target.closest && e.target.closest("[data-city]"); if (!b) return;
+    e.preventDefault();
+    var k = b.getAttribute("data-city"), art = b.closest("[data-id]"), aid = art ? art.getAttribute("data-id") : null, inBar = !!b.closest("#cityBar");
+    cityCycle(k); renderCities(); renderList();
+    var again = aid ? document.querySelector('[data-id="' + aid.replace(/"/g, "") + '"] [data-city="' + k.replace(/["\\]/g, "") + '"]') : (inBar ? document.querySelector('#cityBar [data-city="' + k.replace(/["\\]/g, "") + '"]') : null);
+    if (!again && !inBar) again = document.querySelector('#legend [data-city="' + k.replace(/["\\]/g, "") + '"]');
+    if (again && again.focus) { try { again.focus({ preventScroll: true }); } catch (er) {} }
+  });
   $("#fMatch").addEventListener("change", function () { ui.match = Array.prototype.map.call(document.querySelectorAll("#fMatch input:checked"), function (i) { return i.value; }); renderList(); });
   $("#fHeb").addEventListener("change", function (e) { ui.heb = e.target.checked; renderList(); });
   $("#fMode").addEventListener("change", function (e) { ui.mode = e.target.checked; renderList(); });
   $("#fSource").addEventListener("change", function (e) { ui.source = e.target.value; renderList(); });
-  $("#fSort").addEventListener("change", function (e) { ui.sort = e.target.value; renderList(); });
+  $("#fSort").addEventListener("change", function (e) { ui.sort = e.target.value; ui.rev = false; syncSortUi(); renderList(); });
+  $("#fDir").addEventListener("click", function () { ui.rev = !ui.rev; syncSortUi(); renderList(); });
+  syncSortUi();
 
   function cactClick(e) {
     var ca = e.target.closest("[data-cact]"); if (!ca) return false;
@@ -2134,6 +3110,11 @@ details a { color: var(--accent); }
     handleNet(ca.getAttribute("data-cact"), ca.getAttribute("data-cid"), ca); return true;
   }
   $("#routine").addEventListener("click", function (e) {
+    if (e.target.closest("[data-rtoggle]")) {
+      rtCollapsed = !rtCollapsed;
+      try { localStorage.setItem("radar_rt_collapsed", rtCollapsed ? "1" : "0"); } catch (er) {}
+      renderRoutine(); return;
+    }
     if (cactClick(e)) return;
     var act = e.target.closest("[data-act]"); if (!act) return;
     handleAi(act.getAttribute("data-act"), act.getAttribute("data-oid"), act);
@@ -2190,6 +3171,13 @@ details a { color: var(--accent); }
       else if (kind === "cv") runCv(oid);
       else if (kind === "cv-stop") { var cs0 = cvState[oid]; if (cs0 && cs0.ctl) cs0.ctl.abort(); }
       else if (kind === "cv-copy") copyCv(oid);
+      else if (kind === "cv-fill") fillCv(oid);
+      else if (kind === "cv-fill-ok") fillCommit(oid);
+      else if (kind === "cv-fill-no") { delete fillPrev[oid]; delete fillRaw[oid]; renderList(); }
+      else if (kind === "cv-reset") resetCv(oid);
+      else if (kind === "cv-zero") { zeroAsk[oid] = true; renderList(); }
+      else if (kind === "cv-zero-no") { delete zeroAsk[oid]; renderList(); }
+      else if (kind === "cv-zero-yes") zeroCv(oid);
       else if (kind === "cv-dl") downloadCv(oid);
       else if (kind === "cv-pdf") downloadCvPdf(oid);
       else if (kind === "company") runCompany(oid);
@@ -2198,11 +3186,12 @@ details a { color: var(--accent); }
     }
     var b = e.target.closest("[data-toggle]"); if (!b) return;
     var id = b.getAttribute("data-toggle");
-    if (openIds.has(id)) openIds["delete"](id); else openIds.add(id);
+    if (openIds.has(id)) openIds["delete"](id); else { openIds.clear(); openIds.add(id); }
     renderList();
+    var sb = document.querySelector(".sheet:not([hidden]) .sh-back"); if (sb) { try { sb.focus({ preventScroll: true }); } catch (er) {} }
   });
   $("#list").addEventListener("change", function (e) {
-    var lg = e.target.closest("[data-cvlang]");
+    var lg =e.target.closest("[data-cvlang]");
     if (lg) { cvLang[lg.getAttribute("data-cvlang")] = lg.value; return; }
     var ql = e.target.closest("[data-qzlang]");
     if (ql) { qzLangPref[ql.getAttribute("data-oid")] = ql.value === "en" ? "en" : "fr"; qzSavePref("lang", qzLangPref[ql.getAttribute("data-oid")]); return; }
@@ -2321,7 +3310,7 @@ details a { color: var(--accent); }
     if (dup) { setAddMsg("Cette annonce est déjà au Radar : " + (dup.company || "") + " · " + (dup.title || "") + " (clé : " + dup.id + ").", true); return; }
     var g = guessFromUrl(su) || {};
     addBusy = true; $("#addGo").disabled = true; setAddMsg(sampleFn ? "Claude analyse l'annonce…" : "Ajout en cours…");
-    var p = sampleFn ? sampleFn.json(addPrompt(su, txt, g), { modelTier: "default", cache: false }) : Promise.resolve(null);
+    var p = sampleFn ? sampleFn.json(addPrompt(su, txt, g), { modelTier: modeTier("default"), cache: false }) : Promise.resolve(null);
     p.catch(function (e) { var m = sampleErr(e); if (m) toast(m); return null; }).then(function (r) {
       r = r || {};
       var company = String(r.company || g.company || "Confidentiel").trim(), title = String(r.title || g.title || "Sans intitulé").trim(), city = String(r.location || g.location || CFG.country || "").trim();
@@ -2932,6 +3921,18 @@ details a { color: var(--accent); }
     } else if (e.key === "ArrowRight" || (e.key === "Enter" && !(t && t.tagName === "BUTTON"))) { e.preventDefault(); qzNext(); }
   });
 
+  function renderMode() {
+    document.querySelectorAll("#modeSeg [data-mode]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-mode") === MODE ? "true" : "false"); });
+    var h = document.getElementById("modeHint"); if (h) h.textContent = MODE_HINTS[MODE] || "";
+  }
+  document.getElementById("modeSeg").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-mode]") : null; if (!b) return;
+    MODE = b.getAttribute("data-mode");
+    try { localStorage.setItem("radar-model-mode", MODE); } catch (er) {}
+    renderMode();
+  });
+  renderMode();
+
   renderAll();
   setInterval(renderPulse, 30000);
 
@@ -2973,6 +3974,10 @@ details a { color: var(--accent); }
         renderRelBar(); renderNet(); renderDaily();
         if (VIEW === "offers") { var a = document.activeElement; if (!(a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT") && $("#list").contains(a))) renderList(); }
       }, function () {});
+      db.collection("suggested_contacts").onSnapshot(function (snap) {
+        sugDocs = snap.docs.map(function (x) { return { id: x.id, data: JSON.parse(JSON.stringify(x.data() || {})) }; });
+        sugRefresh();
+      }, function () {});
       db.collection("quizzes").onSnapshot(function (snap) {
         var m = {};
         snap.docs.forEach(function (x) { try { m[x.id] = JSON.parse(JSON.stringify(x.data() || {})); } catch (er) {} });
@@ -2987,6 +3992,91 @@ details a { color: var(--accent); }
     }, function () { dbState = "none"; setDbIssue(NO_DB_MSG); renderAll(); });
   }
   start();
+})();
+</script>
+
+<nav class="bnav" id="bnav" aria-label="Navigation principale">
+  <button type="button" data-go="today" aria-current="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Aujourd'hui</button>
+  <button type="button" data-go="offers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="7" width="17" height="12.5" rx="2"/><path d="M9 7V5.5h6V7"/></svg>Offres</button>
+  <button type="button" data-go="net"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M16 6.5a3 3 0 010 5.6M17.5 14.2c1.6.6 2.7 2.2 3 4.8"/></svg>Réseau</button>
+  <button type="button" data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19V9M12 19V5M19 19v-7"/></svg>Bilan</button>
+</nav>
+<script>
+(function () {
+  var nav = document.getElementById("bnav"); if (!nav) return;
+  var cur = "today";
+  function netOn() { return !!document.querySelector('#viewsw [data-view="net"][aria-pressed="true"]'); }
+  function sync() {
+    var want = netOn() ? "net" : (cur === "net" ? "today" : cur);
+    nav.querySelectorAll("[data-go]").forEach(function (b) { b.setAttribute("aria-current", String(b.getAttribute("data-go") === want)); });
+  }
+  function view(v) { var vb = document.querySelector('#viewsw [data-view="' + v + '"]'); if (vb && vb.getAttribute("aria-pressed") !== "true") vb.click(); }
+  nav.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-go]"); if (!b) return;
+    var go = b.getAttribute("data-go"); cur = go;
+    var target = null;
+    if (go === "today") view("offers");
+    else if (go === "offers") { view("offers"); target = document.getElementById("offersView"); }
+    else if (go === "net") { view("net"); target = document.getElementById("netView"); }
+    else { var rb = document.getElementById("reportBox"); if (rb && !rb.hidden) { rb.open = true; target = rb; } else target = document.querySelector(".info"); }
+    setTimeout(function () {
+      if (go === "today") window.scrollTo({ top: 0, behavior: "smooth" });
+      else if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      sync();
+    }, 30);
+  });
+  var vs = document.getElementById("viewsw");
+  if (vs && window.MutationObserver) new MutationObserver(sync).observe(vs, { attributes: true, subtree: true, attributeFilter: ["aria-pressed"] });
+  sync();
+})();
+(function () {
+  var dt = document.getElementById("topDate");
+  if (dt) { try { var t = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }); dt.textContent = t.charAt(0).toUpperCase() + t.slice(1); } catch (e) {} }
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    var sb = document.querySelector(".sheet:not([hidden]) .sh-back"); if (sb) sb.click();
+  });
+})();
+(function () {
+  var fm = document.getElementById("fMore"), cnt = document.getElementById("fCount"); if (!fm || !cnt) return;
+  function n() {
+    var c = 0;
+    ["fTier", "fCity", "fSource", "fHelp"].forEach(function (i) { var e = document.getElementById(i); if (e && e.value) c++; });
+    fm.querySelectorAll('input[type="checkbox"]').forEach(function (e) { if (e.checked) c++; });
+    var s = document.getElementById("fSort"); if (s && s.value && s.value !== "recent") c++;
+    cnt.textContent = c ? String(c) : "";
+  }
+  if (window.matchMedia && window.matchMedia("(max-width: 760px)").matches) fm.open = false;
+  fm.addEventListener("change", n); fm.addEventListener("input", n);
+  var fd = document.getElementById("fDone");
+  if (fd) fd.addEventListener("click", function () {
+    fm.open = false;
+    var c = document.getElementById("count");
+    if (c && c.scrollIntoView) { try { c.scrollIntoView({ block: "start" }); } catch (e) {} }
+  });
+  fm.addEventListener("toggle", function () {
+    var b = fm.querySelector(".fbody"); if (fm.open && b) b.scrollTop = 0;
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && fm.open) fm.open = false; });
+  var ce = document.getElementById("count");
+  if (ce && window.MutationObserver) new MutationObserver(n).observe(ce, { childList: true, characterData: true, subtree: true });
+  n();
+})();
+</script>
+<button type="button" class="totop" id="toTop" aria-label="Remonter en haut de la page" title="Remonter en haut"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg><span class="lbl">Haut</span></button>
+<script>
+(function () {
+  var b = document.getElementById("toTop");
+  if (!b) return;
+  function y() { return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0; }
+  function upd() { b.classList.toggle("show", y() > 300); }
+  window.addEventListener("scroll", upd, { passive: true });
+  window.addEventListener("resize", upd);
+  b.addEventListener("click", function () {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    try { window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); } catch (e) { window.scrollTo(0, 0); }
+  });
+  upd();
 })();
 </script>
 

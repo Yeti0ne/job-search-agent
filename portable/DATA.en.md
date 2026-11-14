@@ -7,6 +7,7 @@ In the reference implementation, the Radar is a document database read and writt
 radar/
   offers/<key>.json         one opening per file; <key> = slug(company)-slug(title)-slug(city)
   contacts/<slug>.json      one contact per file; <slug> = slug of the name
+  suggested_contacts/<id>.json  contacts proposed by a scan, waiting for the user's decision: { "people": [ ... ], "done": { } }
   runs/<YYYY-MM-DD>.json    log of the watch runs: { "day": "...", "scans": [ ... ] }
   reports/<YYYY-Www>.json   weekly review
   config/match_grid.json    the user's scoring grid, versioned
